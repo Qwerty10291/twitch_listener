@@ -2,3 +2,5 @@ env
 *.mp4
 *.png
 *jpg
+*.pyc
+test.py

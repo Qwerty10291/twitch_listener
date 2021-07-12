@@ -26,6 +26,12 @@ class Game(SqlAlchemyBase):
     name = sqlalchemy.Column(sqlalchemy.String)
     streamers = orm.relation('Streamer', back_populates='game')
 
+    def __str__(self) -> str:
+        return self.name
+    
+    def __repr__(self) -> str:
+        return self.name
+
 class Streamer(SqlAlchemyBase):
     __tablename__ = 'streamers'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
@@ -35,6 +41,12 @@ class Streamer(SqlAlchemyBase):
     is_online = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
     game = orm.relation('Game')
     clips = orm.relation('Clips', back_populates='streamer')
+
+    def __str__(self) -> str:
+        return self.name
+    
+    def __repr__(self) -> str:
+        return self.name
 
 class Trigger(SqlAlchemyBase):
     __tablename__ = 'triggers'
