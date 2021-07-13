@@ -1,5 +1,4 @@
 from typing import List
-import requests
 from sqlalchemy.sql.sqltypes import DateTime
 import streamlink
 import subprocess
