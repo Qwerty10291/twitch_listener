@@ -1,0 +1,191 @@
+.streamers-container .streamers, .users-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  overflow-y: scroll;
+}
+
+* {
+  margin: 0px;
+  padding: 0px;
+  scrollbar-width: thin;
+  font-family: 'Roboto', sans-serif;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 99vh;
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-rows: 5% 95%;
+      grid-template-rows: 5% 95%;
+  -ms-grid-columns: 13% 74% 13%;
+      grid-template-columns: 13% 74% 13%;
+      grid-template-areas: "streamers header users" "streamers videos users";
+  grid-column-gap: 10px;
+}
+
+.header {
+  -ms-grid-row: 1;
+  -ms-grid-column: 2;
+  grid-area: header;
+}
+
+.header h2 {
+  text-align: center;
+}
+
+.streamers-container {
+  -ms-grid-row: 1;
+  -ms-grid-row-span: 2;
+  -ms-grid-column: 1;
+  grid-area: streamers;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  height: 100%;
+}
+
+.streamers-container .streamers {
+  -webkit-box-flex: 1;
+      -ms-flex: 1 1 auto;
+          flex: 1 1 auto;
+  width: 100%;
+}
+
+.streamers-container .streamers .game {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+
+.streamers-container .streamers .game * {
+  font-size: 1.25rem;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
+.streamers-container .streamers .game > span {
+  color: white;
+  text-align: center;
+  background-color: gray;
+}
+
+.streamers-container .streamers .game .streamer {
+  margin-left: 5%;
+}
+
+.streamers-container .add-streamer-container {
+  margin-top: 10px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 auto;
+          flex: 0 0 auto;
+}
+
+.streamers-container .add-streamer-container * {
+  font-size: 1.25rem;
+}
+
+.streamers-container .add-streamer-container input {
+  width: 40%;
+}
+
+.streamers-container .streamer-error {
+  background-color: red;
+  color: white;
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 auto;
+          flex: 0 0 auto;
+}
+
+.streamers-container .streamer-error * {
+  font-size: 1.25rem;
+}
+
+.videos {
+  overflow-y: scroll;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -ms-grid-row: 2;
+  -ms-grid-column: 2;
+  grid-area: videos;
+  scrollbar-width: none;
+  -ms-flex-line-pack: start;
+      align-content: flex-start;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+
+.videos .video-card {
+  width: 18%;
+  height: 20%;
+  margin-right: 20px;
+  margin-bottom: 10px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
+.videos .video-card img {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+}
+
+.videos .video-card .count {
+  position: relative;
+  color: white;
+  font-size: 1.25rem;
+  left: 80%;
+  top: -30px;
+  z-index: 1;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
+.users-container {
+  -ms-grid-row: 1;
+  -ms-grid-row-span: 2;
+  -ms-grid-column: 3;
+  grid-area: users;
+}
+/*# sourceMappingURL=index.css.map */
