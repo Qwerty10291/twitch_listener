@@ -30,7 +30,7 @@ class GameResource(Resource):
 
 streamer_parser = reqparse.RequestParser()
 streamer_parser.add_argument('name', required=True, type=str, location='form')
-streamer_parser.add_argument('game', required=True, type=int, location='form')
+streamer_parser.add_argument('game', required=True, type=str, location='form')
 
 
 class StreamerResource(Resource):
@@ -64,9 +64,9 @@ class StreamerListResource(Resource):
         if 'twitch.tv' in args.name:
             args.name = args.name.split('/')[-1]
         session = db_session.create_session()
-        game = session.query(Game).get(args.game)
+        game = session.query(Game).filter(Game.name == args.game).one_or_none()
         if not game:
-            return jsonify({'error': 'игры с таким id нет'})
+            game = Game(name=args.game)
 
         streamer = session.query(Streamer).filter(Streamer.name == args.name).one_or_none()
         if streamer:
@@ -75,10 +75,11 @@ class StreamerListResource(Resource):
         if not StreamerController().check_streamer_exist(args.name):
             return jsonify({'error': f'стример с именем {args.name} не найден'})
 
-        game.streamers.append(Streamer(name=args.name))  
+        streamer = Streamer(name=args.name)
+        game.streamers.append(streamer)
         session.commit()
 
-        return jsonify({'success': 'OK'})
+        return jsonify(streamer.to_dict(only=('id', 'name', 'is_online', 'game.id', 'game.name')))
     
 phraze_parser = reqparse.RequestParser()
 phraze_parser.add_argument('text', required=True, type=str, location='body')
@@ -93,8 +94,10 @@ class PhrazeListResource(Resource):
     def post(self):
         args = phraze_parser.parse_args()
         session = db_session.create_session()   
-
-        session.add(Trigger(name=args.text))
+        trigger = Trigger(name=args.text)
+        session.add(trigger)
+        session.commit()
+        return jsonify(trigger.to_dict())
 
 class PhrazeResource(Resource):
     def get(self, id):
