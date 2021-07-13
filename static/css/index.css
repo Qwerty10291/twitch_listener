@@ -13,11 +13,12 @@
   margin: 0px;
   padding: 0px;
   scrollbar-width: thin;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 html {
   height: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -97,6 +98,8 @@ body {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
   -webkit-box-orient: horizontal;
   -webkit-box-direction: normal;
       -ms-flex-direction: row;
@@ -114,7 +117,12 @@ body {
 }
 
 .streamers-container .add-streamer-container input {
-  width: 40%;
+  width: 100%;
+}
+
+.streamers-container .add-streamer-container input.streamer_name {
+  width: 70%;
+  margin-top: 5px;
 }
 
 .streamers-container .streamer-error {
@@ -187,5 +195,29 @@ body {
   -ms-grid-row-span: 2;
   -ms-grid-column: 3;
   grid-area: users;
+  width: 100%;
+}
+
+.users-container h3 {
+  text-align: center;
+  background-color: lightgrey;
+}
+
+.users-container .admin-container {
+  margin-bottom: 10px;
+}
+
+.users-container .user {
+  margin: 1px 0px 2px 0px;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.users-container .user.online {
+  background-color: rgba(144, 238, 144, 0.705);
+}
+
+.users-container .user.offline {
+  background-color: rgba(216, 216, 216, 0.705);
 }
 /*# sourceMappingURL=index.css.map */
