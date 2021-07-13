@@ -1,5 +1,4 @@
 from typing import List
-import requests
 from sqlalchemy.sql.sqltypes import DateTime
 import streamlink
 import subprocess
@@ -16,6 +15,7 @@ import time
 class StreamListener:
     oauth = '0gn793kk3c98a6ugz38tt7zgoq6i0g'
     buffer_lenght = 1024 * 50000
+    recieving_bytes_amount = 8192 * 2
     trigger_timeout = timedelta(minutes=1)
     phrazes_buffer_range = timedelta(seconds=30)
     listening_after_triggering = timedelta(seconds=15)
@@ -28,6 +28,7 @@ class StreamListener:
 
     def run(self):
         """начальная инициализация"""
+        print('starting', self.streamer.name)
         db_session.global_init()
 
         self.phrazes = self.load_phrazes()
@@ -53,6 +54,7 @@ class StreamListener:
 
     def stop(self):
         """остановка процесса"""
+        print('stopping', self.streamer.name)
         if getattr(self, 'process', None):
             self.process.terminate()
         else:
@@ -86,7 +88,6 @@ class StreamListener:
 
     def _phrazes_handler(self, message):
         """обработчик сообщений чата"""
-        print(message.text)
         text = message.text.lower()
         self._chat_buffer_update()
         for phraze in self.phrazes:
@@ -107,7 +108,7 @@ class StreamListener:
         while True:
             if not self.is_listening:
                 break
-            self.video += self.stream.read(4096)
+            self.video += self.stream.read(self.recieving_bytes_amount)
             if len(self.video) > self.buffer_lenght:
                 del self.video[:len(self.video) - self.buffer_lenght]
 
@@ -133,7 +134,6 @@ class StreamListener:
                 break
         if count:
             del self.chat_buffer[:count + 1]
-        print(self.chat_buffer)
 
     @staticmethod
     def load_phrazes():
@@ -141,12 +141,4 @@ class StreamListener:
         session = db_session.create_session()
         phrazes = session.query(Trigger).all()
         return [phraze.name for phraze in phrazes]
-
-if __name__ == '__main__':
-    db_session.global_init()
-    session = db_session.create_session()
-    streamer = session.query(Streamer).all()[0]
-    session.expunge(streamer)
-
-    listener = StreamListener(streamer)
-    listener.run_in_proccess()
+    
