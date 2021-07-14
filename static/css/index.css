@@ -9,6 +9,14 @@
   overflow-y: scroll;
 }
 
+.streamers-container .streamers .game .online, .users-container .online {
+  background-color: rgba(144, 238, 144, 0.705);
+}
+
+.streamers-container .streamers .game .offline, .users-container .offline {
+  background-color: rgba(216, 216, 216, 0.705);
+}
+
 * {
   margin: 0px;
   padding: 0px;
@@ -27,9 +35,9 @@ body {
   display: grid;
   -ms-grid-rows: 5% 95%;
       grid-template-rows: 5% 95%;
-  -ms-grid-columns: 13% 74% 13%;
-      grid-template-columns: 13% 74% 13%;
-      grid-template-areas: "streamers header users" "streamers videos users";
+  -ms-grid-columns: 20% 60% 20%;
+      grid-template-columns: 20% 60% 20%;
+      grid-template-areas: "streamers header users" "streamers videos users";
   grid-column-gap: 10px;
 }
 
@@ -90,7 +98,7 @@ body {
 }
 
 .streamers-container .streamers .game .streamer {
-  margin-left: 5%;
+  padding-left: 5px;
 }
 
 .streamers-container .add-streamer-container {
@@ -117,12 +125,13 @@ body {
 }
 
 .streamers-container .add-streamer-container input {
+  margin-top: 3px;
+  margin-bottom: 2px;
   width: 100%;
 }
 
-.streamers-container .add-streamer-container input.streamer_name {
-  width: 70%;
-  margin-top: 5px;
+.streamers-container .add-streamer-container button {
+  width: 100%;
 }
 
 .streamers-container .streamer-error {
@@ -211,13 +220,5 @@ body {
   margin: 1px 0px 2px 0px;
   font-size: 1.25rem;
   text-align: center;
-}
-
-.users-container .user.online {
-  background-color: rgba(144, 238, 144, 0.705);
-}
-
-.users-container .user.offline {
-  background-color: rgba(216, 216, 216, 0.705);
 }
 /*# sourceMappingURL=index.css.map */

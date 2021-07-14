@@ -3,6 +3,16 @@
     flex-direction: column;
     overflow-y: scroll;
 }
+
+%status{
+    .online {
+        background-color: rgba(144, 238, 144, 0.705);
+    }
+    .offline {
+        background-color: rgba(216, 216, 216, 0.705);
+    }
+}
+
 * {
     margin: 0px;
     padding: 0px;
@@ -18,7 +28,7 @@ body {
     height: 99vh;
     display: grid;
     grid-template-rows: 5% 95%;
-    grid-template-columns: 13% 74% 13%;
+    grid-template-columns: 20% 60% 20%;
     grid-template-areas:
         "streamers header users"
         "streamers videos users";
@@ -51,9 +61,10 @@ body {
                 text-align: center;
                 background-color: gray;
             }
-            .streamer {
-                margin-left: 5%;
+            .streamer{
+                padding-left: 5px;
             }
+            @extend %status
         }
     }
     .add-streamer-container {
@@ -66,10 +77,13 @@ body {
         flex-direction: row;
         justify-content: space-between;
         input {
+            margin-top: 3px;
+            margin-bottom: 2px;
             width: 100%;
         }
-        input.streamer_name{width:70%;margin-top: 5px;}
-
+        button{
+            width: 100%;
+        }
         flex: 0 0 auto;
     }
     .streamer-error {
@@ -129,10 +143,5 @@ body {
         font-size: 1.25rem;
         text-align: center;
     }
-    .user.online {
-        background-color: rgba(144, 238, 144, 0.705);
-    }
-    .user.offline {
-        background-color: rgba(216, 216, 216, 0.705);
-    }
+    @extend %status
 }
