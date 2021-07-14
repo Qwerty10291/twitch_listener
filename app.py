@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from db import db_session
 from loader_controller import StreamerController
 from flask_restful import Api
@@ -16,7 +16,8 @@ api.add_resource(PhrazeResource, '/api/trigger/<int:id>')
 
 @app.route('/')
 def index():
-    return 'Hello'
+    return render_template('index.html')
+
 
 if __name__ == '__main__':
     db_session.global_init()

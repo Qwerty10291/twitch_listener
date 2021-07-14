@@ -23,7 +23,7 @@ class GameResource(Resource):
         game = Game(name=args.name)
         session.add(game)
         session.commit()
-        return jsonify({'success': 'OK'})
+        return jsonify(game.to_dict(only=('id', 'name')))
     
 
 
@@ -72,12 +72,16 @@ class StreamerListResource(Resource):
         if streamer:
             return jsonify({'error': 'стример с таким именем уже существует'})
 
-        if not StreamerController().check_streamer_exist(args.name):
+        controller = StreamerController()
+        if not controller.check_streamer_exist(args.name):
             return jsonify({'error': f'стример с именем {args.name} не найден'})
+        
 
         streamer = Streamer(name=args.name)
         game.streamers.append(streamer)
         session.commit()
+        
+        controller.add_streamer(streamer)
 
         return jsonify(streamer.to_dict(only=('id', 'name', 'is_online', 'game.id', 'game.name')))
     
