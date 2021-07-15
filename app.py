@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, sessions
 from db import db_session
 from db import logic
-from db.models import Users
+from db.models import *
 from loader_controller import StreamerController
 from flask_restful import Api
 from streamer_resource import GameResource, StreamerResource, StreamerListResource, PhrazeResource, PhrazeListResource
@@ -9,10 +9,13 @@ from login import login_manager
 from flask_login import login_required, login_user, logout_user, current_user
 from forms import LoginForm, RegisterForm
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask_admin import Admin
+from admin_views import *
 
 
 app = Flask(__name__)
 app.secret_key = b'iwiuwjeiuweulie49812389u298'
+admin = Admin(app)
 login_manager.init_app(app)
 
 api = Api(app)
@@ -78,7 +81,14 @@ def logout():
         logout_user()
     return redirect('/login')
 
+
+
 if __name__ == '__main__':
     db_session.global_init()
+    session = db_session.create_session()
+    admin.add_view(UserView(Users, session, name='users'))
+    admin.add_view(StreamerView(Streamer, session, name='streamers'))
+    admin.add_view(GameView(Game, session, name='games'))
+    admin.add_view(TriggerView(Trigger, session, name='triggers'))
     controller = StreamerController()
     app.run('localhost', 8000)
