@@ -15,23 +15,15 @@
   </head>
   <body>
     <div class="header">
-      <h2>streamer name</h2>
+      <h2 id="current_sreamer">streamer name</h2>
     </div>
     <div class="streamers-container">
       <div class="streamers">
-        <div class="game">
-          <span>game</span>
-          <div class="streamer online"><span>streamer</span></div>
-          <div class="streamer offline"><span>streamer</span></div>
-          <div class="streamer"><span>streamer</span></div>
-          <div class="streamer"><span>streamer</span></div>
-          <div class="streamer"><span>streamer</span></div>
-        </div>
       </div>
       <div class="add-streamer-container">
-        <input type="text" placeholder="игра" class="game_name" />
-        <input type="text" placeholder="стример" class="streamer_name" />
-        <button class="streamer_commit">создать</button>
+        <input type="text" placeholder="игра" id="game_name" />
+        <input type="text" placeholder="стример" id="streamer_name" />
+        <button id="streamer_commit">создать</button>
       </div>
       <div class="streamer-error"></div>
     </div>
@@ -44,5 +36,6 @@
         <h3>Пользователи</h3>
       </div>
     </div>
+    <script src="{{ url_for('static', filename='js/streamers.js') }}"></script>
   </body>
 </html>
