@@ -64,7 +64,7 @@ class StreamerResource(Resource):
         streamer = session.query(Streamer).get(id)
         if not streamer:
             return jsonify({'error': 'стримера с таким id нет'})
-        
+        StreamerController().delete_streamer(streamer)
         session.delete(streamer)
         session.commit()
         return jsonify({'success': 'OK'})

@@ -9,7 +9,7 @@ from flask_login import UserMixin
 class Users(SqlAlchemyBase, SerializerMixin, UserMixin):
     __tablename__ = 'users'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    login = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    login = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=False)
     password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     role = sqlalchemy.Column(sqlalchemy.String, default='user')
     is_approved = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
@@ -24,9 +24,9 @@ class UsersQueue(SqlAlchemyBase, SerializerMixin):
 
 class Game(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'games'
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    name = sqlalchemy.Column(sqlalchemy.String)
-    streamers = orm.relation('Streamer', back_populates='game')
+    id = sqlalchemy.Column(sqlalchemy.Integer,  primary_key=True, autoincrement=True)
+    name = sqlalchemy.Column(sqlalchemy.String, unique=True)
+    streamers = orm.relation('Streamer', cascade='all, delete', back_populates='game')
 
     def __str__(self) -> str:
         return self.name
@@ -38,11 +38,11 @@ class Streamer(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'streamers'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     game_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('games.id'))
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    name = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=False)
     activity = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     is_online = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
     game = orm.relation('Game')
-    clips = orm.relation('Clips', back_populates='streamer')
+    clips = orm.relation('Clips', cascade='all, delete', back_populates='streamer')
 
     def __str__(self) -> str:
         return self.name
