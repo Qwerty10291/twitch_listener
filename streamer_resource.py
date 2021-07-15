@@ -71,6 +71,7 @@ class StreamerListResource(Resource):
         game = session.query(Game).filter(Game.name == args.game).one_or_none()
         if not game:
             game = Game(name=args.game)
+            session.add(game)
 
         streamer = session.query(Streamer).filter(Streamer.name == args.name).one_or_none()
         if streamer:
@@ -80,14 +81,12 @@ class StreamerListResource(Resource):
         if not controller.check_streamer_exist(args.name):
             return jsonify({'error': f'стример с именем {args.name} не найден'})
         
-
         streamer = Streamer(name=args.name)
         game.streamers.append(streamer)
         session.commit()
         
         json = streamer.to_dict(only=('id', 'name', 'is_online', 'game.id', 'game.name'))
-        session.expunge(streamer)
-        session.expunge(game)
+        session.expunge_all()
         controller.add_streamer(streamer)
 
         return jsonify(json)
