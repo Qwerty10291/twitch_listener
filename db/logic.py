@@ -30,7 +30,7 @@ def create_user(login, password, is_admin=False, session:Session=None):
 
 def on_delete_streamer(streamer):
     for i in streamer.clips:
-        filename = streamer.name + str(i.id)
+        filename = streamer.name + '_' + str(i.id)
         print(filename)
         try:
             os.remove(clip_path + filename + '.mp4')
