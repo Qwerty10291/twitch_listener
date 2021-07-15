@@ -20,17 +20,25 @@ class GameView(ModelView):
     form_columns = ['name', 'streamers']
 
 class StreamerView(ModelView):
+
     def create_model(self, form):
         name = request.form.get('name')
         controller = StreamerController()
         if not controller.check_streamer_exist(name):
             return False
-        return super().create_model(form)
-
-    def delete_model(self, model:Streamer):
+        streamer = super().create_model(form)
+        self.session.expunge(streamer)
+        controller.add_streamer(streamer)
+        return True
+    
+    def delete_model(self, model):
+        self.on_model_delete(model)
         logic.on_delete_streamer(model)
-        print(model)
-        super().delete_model(model)
+        StreamerController().delete_streamer(model)
+        self.session.delete(model)
+        self.session.commit()
+        self.after_model_delete(model)
+    
 
     form_columns = ['game', 'name']
 

@@ -12,7 +12,7 @@ def admin_required(func):
     def wrapper(*args, **kwargs):
         if current_user.role != 'admin':
             return jsonify({'error': 'вы не администратор'})
-        func(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper
 
 class GameResource(Resource):
@@ -104,7 +104,6 @@ class StreamerListResource(Resource):
         json = streamer.to_dict(only=('id', 'name', 'is_online', 'game.id', 'game.name'))
         session.expunge_all()
         controller.add_streamer(streamer)
-
         return jsonify(json)
     
 phraze_parser = reqparse.RequestParser()
@@ -151,3 +150,9 @@ class PhrazeResource(Resource):
         session.delete(phraze)
         session.commit()
         return jsonify({'success': 'OK'})
+
+class UserListResource(Resource):
+    def get(self):
+        session = db_session.create_session()
+        users = session.query(Users).all()
+        return jsonify([user.to_dict(only=('id', 'login', 'role')) for user in users])

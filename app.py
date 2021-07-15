@@ -1,22 +1,36 @@
-from flask import Flask, render_template, request, redirect, sessions
+from flask import Flask, render_template, request, redirect, sessions, abort
+from flask_admin.base import expose
 from db import db_session
 from db import logic
 from db.models import *
 from loader_controller import StreamerController
 from flask_restful import Api
-from streamer_resource import GameResource, StreamerResource, StreamerListResource, PhrazeResource, PhrazeListResource
+from streamer_resource import GameResource, StreamerResource, StreamerListResource, PhrazeResource, PhrazeListResource, UserListResource
 from login import login_manager
 from flask_login import login_required, login_user, logout_user, current_user
 from forms import LoginForm, RegisterForm
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask_admin import Admin
+from flask_admin import Admin, AdminIndexView
 from admin_views import *
+
+class AdminView(AdminIndexView):
+    @expose('/')
+    def index(self):
+        if not current_user:
+            return abort(404)
+        if current_user.role != 'admin':
+            return abort(404)
+        else:
+            return super().index()
 
 
 app = Flask(__name__)
 app.secret_key = b'iwiuwjeiuweulie49812389u298'
-admin = Admin(app)
+admin = Admin(app, index_view=AdminView())
 login_manager.init_app(app)
+
+
+    
 
 api = Api(app)
 api.add_resource(GameResource, '/api/game')
@@ -24,6 +38,7 @@ api.add_resource(StreamerListResource, '/api/streamer')
 api.add_resource(StreamerResource, '/api/streamer/<int:id>')
 api.add_resource(PhrazeListResource, '/api/trigger')
 api.add_resource(PhrazeResource, '/api/trigger/<int:id>')
+api.add_resource(UserListResource, '/api/user')
 
 
 @app.route('/')
@@ -69,7 +84,7 @@ def register():
             return render_template('register.html', title='Регистрация', form=form, errors="Данный логин занят.")
         hashed_password = generate_password_hash(request.form.get('password'))
 
-        user = Users(login=login, password=hashed_password, role=user, is_approved=True)
+        user = Users(login=login, password=hashed_password, role='user', is_approved=False)
         session.add(user)
         session.commit()
         return redirect('/login')
