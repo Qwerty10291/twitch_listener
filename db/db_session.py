@@ -12,7 +12,7 @@ def global_init():
     if __factory:
         return
 
-    conn_str = f'postgresql+psycopg2://twitch:qwerty1029@localhost/twitch'
+    conn_str = f'postgresql+psycopg2://postgres:qwerty1029@localhost/twitch'
     print(f"Подключение к базе данных по адресу {conn_str}")
 
     engine = sa.create_engine(conn_str, echo=False)

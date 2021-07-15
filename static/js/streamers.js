@@ -68,18 +68,18 @@ class Streamer {
       this.active_streamer.element.style.border = "";
       streamer.element.style.border = "2px solid gray";
       this.active_streamer = streamer;
-      this.update_clips(streamer)
+      this.update_clips(streamer);
     } else {
       streamer.element.style.border = "2px solid gray";
       this.active_streamer = streamer;
-      this.update_clips(streamer)
+      this.update_clips(streamer);
     }
   }
 
   sort_streamers() {
     this.data.sort();
     for (let game of this.data) {
-      game.streamers.sort((a, b) => a.activity - b.activity);
+      game.streamers.sort((a, b) => b.activity - a.activity);
     }
   }
 
@@ -98,10 +98,10 @@ class Streamer {
     form_data.append("game", game);
     fetch("/api/streamer", { method: "POST", body: form_data }).then((resp) => {
       resp.json().then((data) => {
-        if (data.error)this.error_container.innerHTML = data.error;
-        else{
-          this.error_container.innerHTML = ""
-          setTimeout(this.get_streamers, 1000)
+        if (data.error) this.error_container.innerHTML = data.error;
+        else {
+          this.error_container.innerHTML = "";
+          setTimeout(this.get_streamers, 1000);
         }
       });
     });
@@ -112,7 +112,7 @@ class Streamer {
       if (resp.status != 200) alert("Ошибка загрузки информации о клипах");
       else {
         resp.json().then((data) => {
-          data.clips.sort((a, b) => a.activity - b.activity);
+          data.clips.sort((a, b) => b.activity - a.activity);
           this.generate_clip_html(data.clips);
         });
       }

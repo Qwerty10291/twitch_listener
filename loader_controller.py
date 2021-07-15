@@ -55,8 +55,8 @@ class StreamerController:
 
     def __init__(self) -> None:
         self.api = twitch.Helix(self.client_id, self.client_secret)
-        self.streamers = self._load_streamers()
-        self.update_thread = self.run_updater()
+        # self.streamers = self._load_streamers()
+        # self.update_thread = self.run_updater()
     
     def run_updater(self):
         update_thread = threading.Thread(target=self._update_timer, daemon=True)

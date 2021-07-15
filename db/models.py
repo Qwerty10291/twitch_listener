@@ -3,9 +3,10 @@ from .db_session import SqlAlchemyBase
 from sqlalchemy import orm
 from datetime import datetime
 from sqlalchemy_serializer import SerializerMixin
+from flask_login import UserMixin
 
 
-class Users(SqlAlchemyBase, SerializerMixin):
+class Users(SqlAlchemyBase, SerializerMixin, UserMixin):
     __tablename__ = 'users'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     login = sqlalchemy.Column(sqlalchemy.String, nullable=False)

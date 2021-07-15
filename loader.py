@@ -20,6 +20,8 @@ class StreamListener:
     phrazes_buffer_range = timedelta(seconds=60)
     listening_after_triggering = timedelta(seconds=15)
     phraze_threshold = 1
+    clip_path = '.\\static\\clips\\'
+    screenshot_path = '.\\static\\screenshots\\'
 
     def __init__(self, streamer: Streamer) -> None:
         self.streamer = streamer
@@ -71,26 +73,28 @@ class StreamListener:
         try:
             session = db_session.create_session()
             session.add(self.streamer)
+
             self.streamer.clips.append(clip)
             self.streamer.activity += 1
+            streamer = self.streamer
             session.commit()
         except:
-            session =db_session.create_session()
+            session = db_session.create_session()
             streamer = session.query(Streamer).get(self.streamer.id)
             streamer.clips.append(clip)
             streamer.activity += 1
             session.commit()
 
-        
-        filename = f'{clip.id}.mp4'
-        file_path = filename
+        filename = f'{streamer.name}_{clip.id}.mp4'
+        clip_path = self.clip_path + filename
+        screen_path = self.screenshot_path + filename.replace('.mp4', '.jpg')
         with open('b_' + filename, 'wb') as file:
             file.write(self.video)
         subprocess.call(['ffmpeg', '-err_detect', 'ignore_err', '-i',
-                        f'b_{filename}', '-ss', '00:00:00', '-t', '00:00:40', '-c', 'copy', '-y', file_path])
+                        f'b_{filename}', '-ss', '00:00:00', '-t', '00:00:40', '-c', 'copy', '-y', clip_path], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         os.remove('b_' + filename)
-        subprocess.call(['ffmpeg', '-ss', '00:00:10', '-i', file_path,
-                        '-vframes', '1', '-q:v', '2',  file_path.replace('.mp4', '.jpg')])
+        subprocess.call(['ffmpeg', '-ss', '00:00:10', '-i', clip_path,
+                        '-vframes', '1', '-q:v', '2',  screen_path],  stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         session.close()
 
     def _phrazes_handler(self, message):
@@ -104,7 +108,8 @@ class StreamListener:
                 break
         if len(self.chat_buffer) >= self.phraze_threshold and datetime.now() - self.trigger_timer > self.trigger_timeout:
             self.trigger_timer = datetime.now()
-            timer_thread = threading.Thread(target=self._save_by_timer, args=(self.listening_after_triggering.seconds, ))
+            timer_thread = threading.Thread(target=self._save_by_timer, args=(
+                self.listening_after_triggering.seconds, ))
             timer_thread.start()
 
     def _stream_listener(self):
@@ -116,9 +121,12 @@ class StreamListener:
         while True:
             if not self.is_listening:
                 break
-            self.video += self.stream.read(self.recieving_bytes_amount)
-            if len(self.video) > self.buffer_lenght:
-                del self.video[:len(self.video) - self.buffer_lenght]
+            try:
+                self.video += self.stream.read(self.recieving_bytes_amount)
+                if len(self.video) > self.buffer_lenght:
+                    del self.video[:len(self.video) - self.buffer_lenght]
+            except:
+                pass
 
     def _save_by_timer(self, seconds):
         """функция для потока таймера запуска"""
@@ -133,7 +141,7 @@ class StreamListener:
         """обновление буфера чата"""
         if not self.can_deleting_message_buffer:
             return
-        
+
         count = 0
         for i in range(len(self.chat_buffer)):
             if datetime.now() - self.chat_buffer[i] > self.phrazes_buffer_range:
@@ -149,4 +157,3 @@ class StreamListener:
         session = db_session.create_session()
         phrazes = session.query(Trigger).all()
         return [phraze.name for phraze in phrazes]
-    

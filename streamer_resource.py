@@ -3,17 +3,27 @@ from flask import jsonify
 from db import db_session
 from db.models import *
 from loader_controller import StreamerController
+from flask_login import login_required, current_user
 
 game_parser = reqparse.RequestParser()
 game_parser.add_argument('name', required=True, type=str, location='form')
 
+def admin_required(func):
+    def wrapper(*args, **kwargs):
+        if current_user.role != 'admin':
+            return jsonify({'error': 'вы не администратор'})
+        func(*args, **kwargs)
+    return wrapper
 
 class GameResource(Resource):
+    @login_required
     def get(self):
         session = db_session.create_session()
         games = session.query(Game).all()
         return jsonify([game.to_dict(only=('id', 'name', 'streamers.id', 'streamers.name', 'streamers.activity', 'streamers.is_online')) for game in games])
 
+    @login_required
+    @admin_required
     def post(self):
         args = game_parser.parse_args()
         session = db_session.create_session()
@@ -34,6 +44,7 @@ streamer_parser.add_argument('game', required=True, type=str, location='form')
 
 
 class StreamerResource(Resource):
+    @login_required
     def get(self, id):
         session = db_session.create_session()
         streamer = session.query(Streamer).get(id)
@@ -42,10 +53,12 @@ class StreamerResource(Resource):
         
         json = streamer.to_dict(only=('id', 'game_id', 'name', 'activity', 'is_online', 'clips.id', 'clips.activity'))
         for clip in json['clips']:
-            clip['image'] = f'static/screenshots/{clip["id"]}.jpg'
-            clip['video'] = f'static/clips/{clip["id"]}.mp4'
+            clip['image'] = f'static/screenshots/{streamer.name}_{clip["id"]}.jpg'
+            clip['video'] = f'static/clips/{streamer.name}_{clip["id"]}.mp4'
         return jsonify(json)
 
+    @login_required
+    @admin_required
     def delete(self, id):
         session = db_session.create_session()
         streamer = session.query(Streamer).get(id)
@@ -57,12 +70,15 @@ class StreamerResource(Resource):
         return jsonify({'success': 'OK'})
     
 class StreamerListResource(Resource):
+    @login_required
     def get(self):
         session = db_session.create_session()
         streamers = session.query(Streamer).order_by(Streamer.activity.desc()).all()
 
         return jsonify([streamer.to_dict(only=('id', 'name', 'activity', 'is_online', 'game.id', 'game.name')) for streamer in streamers])
     
+    @login_required
+    @admin_required
     def post(self):
         args = streamer_parser.parse_args()
         if 'twitch.tv' in args.name:
@@ -95,12 +111,15 @@ phraze_parser = reqparse.RequestParser()
 phraze_parser.add_argument('text', required=True, type=str, location='body')
 
 class PhrazeListResource(Resource):
+    @login_required
     def get(self):
         session = db_session.create_session()
         phrazes = session.query(Trigger).all()
 
         return jsonify([phraze.to_dict(only=('id', 'name')) for phraze in phrazes])
     
+    @login_required
+    @admin_required
     def post(self):
         args = phraze_parser.parse_args()
         session = db_session.create_session()   
@@ -110,6 +129,7 @@ class PhrazeListResource(Resource):
         return jsonify(trigger.to_dict())
 
 class PhrazeResource(Resource):
+    @login_required
     def get(self, id):
         session = db_session.create_session()
 
@@ -119,6 +139,8 @@ class PhrazeResource(Resource):
         
         return jsonify(phraze.to_dict(only=('id', 'name')))
     
+    @login_required
+    @admin_required
     def delete(self, id):
         session = db_session.create_session()
 
