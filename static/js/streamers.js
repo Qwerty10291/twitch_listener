@@ -3,7 +3,10 @@ class Streamer {
     this.active_streamer = null;
     this.streamer_name = document.getElementById("current_sreamer");
     this.clips_container = document.querySelector(".videos");
-    this.connect_add_button();
+    try {
+      this.connect_add_button();
+    } catch (error) {
+    }
     this.get_streamers();
   }
 
@@ -15,6 +18,7 @@ class Streamer {
         );
       else
         resp.json().then((data) => {
+          this.active_streamer = null
           this.data = data;
           this.sort_streamers();
           this.init_html();
@@ -66,11 +70,13 @@ class Streamer {
     if (this.active_streamer !== null) {
       if (this.active_streamer.name == streamer.name) return;
       this.active_streamer.element.style.border = "";
+      this.streamer_name.innerHTML = streamer.name
       streamer.element.style.border = "2px solid gray";
       this.active_streamer = streamer;
       this.update_clips(streamer);
     } else {
       streamer.element.style.border = "2px solid gray";
+      this.streamer_name.innerHTML = streamer.name
       this.active_streamer = streamer;
       this.update_clips(streamer);
     }
@@ -101,7 +107,7 @@ class Streamer {
         if (data.error) this.error_container.innerHTML = data.error;
         else {
           this.error_container.innerHTML = "";
-          setTimeout(this.get_streamers, 1000);
+          this.get_streamers()
         }
       });
     });
