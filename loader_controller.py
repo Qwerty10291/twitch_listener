@@ -81,7 +81,7 @@ class StreamerController:
     def _load_streamers(self) -> List[StreamerControllerChild]:
         session = db_session.create_session()
         streamers = session.query(Streamer).all()
-        session.expunge_all()
+        session.close()
         controllers = [StreamerControllerChild(streamer, self.api) for streamer in streamers]
         for controller in controllers:
             controller.check_streaming()

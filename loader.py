@@ -66,18 +66,24 @@ class StreamListener:
         if len(self.video) < self.buffer_lenght * 0.9:
             print(f'not enought video')
             return
-        
-        print('starting', activity)
-        session = db_session.create_session()
-        session.add(self.streamer)
         clip = Clips(activity=activity)
-        self.streamer.clips.append(clip)
-        self.streamer.activity += 1
-        session.commit()
-        
+        print('starting', activity)
+        try:
+            session = db_session.create_session()
+            session.add(self.streamer)
+            self.streamer.clips.append(clip)
+            self.streamer.activity += 1
+            session.commit()
+        except:
+            session =db_session.create_session()
+            streamer = session.query(Streamer).get(self.streamer.id)
+            streamer.clips.append(clip)
+            streamer.activity += 1
+            session.commit()
 
+        
         filename = f'{clip.id}.mp4'
-        file_path = os.path.join(os.os.getcwd(), '/static/clips', filename)
+        file_path = filename
         with open('b_' + filename, 'wb') as file:
             file.write(self.video)
         subprocess.call(['ffmpeg', '-err_detect', 'ignore_err', '-i',
@@ -93,6 +99,7 @@ class StreamListener:
         self._chat_buffer_update()
         for phraze in self.phrazes:
             if phraze in text:
+                print(phraze)
                 self.chat_buffer.append(datetime.now())
                 break
         if len(self.chat_buffer) >= self.phraze_threshold and datetime.now() - self.trigger_timer > self.trigger_timeout:
