@@ -56,7 +56,6 @@ class StreamListener:
 
     def stop(self):
         """остановка процесса"""
-        print('stopping', self.streamer.name)
         if getattr(self, 'process', None):
             self.process.terminate()
         else:

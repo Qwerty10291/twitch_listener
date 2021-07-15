@@ -46,8 +46,9 @@ class StreamerControllerChild:
         session.close()
     
     def on_delete(self):
-        print('stopping', self.name)
-        self.listener.stop()
+        if self.is_streaming:
+            print('stopping', self.name)
+            self.listener.stop()
 
 
 @singleton
