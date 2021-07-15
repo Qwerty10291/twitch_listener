@@ -17,9 +17,9 @@ class StreamListener:
     buffer_lenght = 1024 * 50000
     recieving_bytes_amount = 8192 * 2
     trigger_timeout = timedelta(minutes=1)
-    phrazes_buffer_range = timedelta(seconds=30)
+    phrazes_buffer_range = timedelta(seconds=60)
     listening_after_triggering = timedelta(seconds=15)
-    phraze_threshold = 2
+    phraze_threshold = 1
 
     def __init__(self, streamer: Streamer) -> None:
         self.streamer = streamer
@@ -77,13 +77,14 @@ class StreamListener:
         
 
         filename = f'{clip.id}.mp4'
+        file_path = os.path.join(os.os.getcwd(), '/static/clips', filename)
         with open('b_' + filename, 'wb') as file:
             file.write(self.video)
         subprocess.call(['ffmpeg', '-err_detect', 'ignore_err', '-i',
-                        f'b_{filename}', '-ss', '00:00:00', '-t', '00:00:40', '-c', 'copy', '-y', filename])
+                        f'b_{filename}', '-ss', '00:00:00', '-t', '00:00:40', '-c', 'copy', '-y', file_path])
         os.remove('b_' + filename)
-        subprocess.call(['ffmpeg', '-ss', '00:00:10', '-i', filename,
-                        '-vframes', '1', '-q:v', '2',  filename.replace('.mp4', '.jpg')])
+        subprocess.call(['ffmpeg', '-ss', '00:00:10', '-i', file_path,
+                        '-vframes', '1', '-q:v', '2',  file_path.replace('.mp4', '.jpg')])
         session.close()
 
     def _phrazes_handler(self, message):

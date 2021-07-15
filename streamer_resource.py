@@ -12,7 +12,7 @@ class GameResource(Resource):
     def get(self):
         session = db_session.create_session()
         games = session.query(Game).all()
-        return jsonify([game.to_dict(only=('id', 'name', 'streamers.id', 'streamers.name', 'streamers.activity')) for game in games])
+        return jsonify([game.to_dict(only=('id', 'name', 'streamers.id', 'streamers.name', 'streamers.activity', 'streamers.is_online')) for game in games])
 
     def post(self):
         args = game_parser.parse_args()
@@ -40,7 +40,11 @@ class StreamerResource(Resource):
         if not streamer:
             return jsonify({'error': 'стримера с таким id нет'})
         
-        return jsonify(streamer.to_dict(only=('id', 'game_id', 'name', 'activity', 'is_online', 'clips.id', 'clips.activity')))
+        json = streamer.to_dict(only=('id', 'game_id', 'name', 'activity', 'is_online', 'clips.id', 'clips.activity'))
+        for clip in json['clips']:
+            clip['image'] = f'static/screenshots/{clip["id"]}.jpg'
+            clip['video'] = f'static/clips/{clip["id"]}.mp4'
+        return jsonify(json)
 
     def delete(self, id):
         session = db_session.create_session()
@@ -81,9 +85,12 @@ class StreamerListResource(Resource):
         game.streamers.append(streamer)
         session.commit()
         
+        json = streamer.to_dict(only=('id', 'name', 'is_online', 'game.id', 'game.name'))
+        session.expunge(streamer)
+        session.expunge(game)
         controller.add_streamer(streamer)
 
-        return jsonify(streamer.to_dict(only=('id', 'name', 'is_online', 'game.id', 'game.name')))
+        return jsonify(json)
     
 phraze_parser = reqparse.RequestParser()
 phraze_parser.add_argument('text', required=True, type=str, location='body')
