@@ -20,8 +20,8 @@ class StreamListener:
     phrazes_buffer_range = timedelta(seconds=30)
     listening_after_triggering = timedelta(seconds=15)
     phraze_threshold = 2
-    clip_path = '.\\static\\clips\\'
-    screenshot_path = '.\\static\\screenshots\\'
+    clip_path = './static/clips/'
+    screenshot_path = './static/screenshots/'
 
     def __init__(self, streamer: Streamer) -> None:
         self.streamer = streamer

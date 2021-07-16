@@ -2,8 +2,8 @@ from sqlalchemy.orm.session import Session
 from .models import *
 from .db_session import create_session
 import os
-clip_path = '.\\static\\clips\\'
-screenshot_path = '.\\static\\screenshots\\'
+clip_path = './static/clips/'
+screenshot_path = './static/screenshots/'
 
 def init_session(func):
     def wrapper(*argv, **kwargs):
