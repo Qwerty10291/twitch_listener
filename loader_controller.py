@@ -10,20 +10,21 @@ import threading
 
 def singleton(class_):
     instances = {}
+
     def getinstance(*args, **kwargs):
         if class_ not in instances:
             instances[class_] = class_(*args, **kwargs)
         return instances[class_]
     return getinstance
 
+
 class StreamerControllerChild:
-    def __init__(self, streamer:Streamer, api:twitch.Helix) -> None:
+    def __init__(self, streamer: Streamer, api: twitch.Helix) -> None:
         self.is_streaming = False
         self.streamer = streamer
         self.api = api
         self.listener = StreamListener(streamer)
-        
-    
+
     def check_streaming(self):
         session = db_session.create_session()
         session.add(self.streamer)
@@ -44,7 +45,7 @@ class StreamerControllerChild:
                 self.listener.stop()
         session.commit()
         session.close()
-    
+
     def on_delete(self):
         if self.is_streaming:
             print('stopping', self.name)
@@ -60,30 +61,31 @@ class StreamerController:
 
     def __init__(self) -> None:
         self.api = twitch.Helix(self.client_id, self.client_secret)
-        self.streamers = self._load_streamers()
-        self.update_thread = self.run_updater()
-    
+        # self.streamers = self._load_streamers()
+        # self.update_thread = self.run_updater()
+
     def run_updater(self):
-        update_thread = threading.Thread(target=self._update_timer, daemon=True)
+        update_thread = threading.Thread(
+            target=self._update_timer, daemon=True)
         update_thread.start()
         return update_thread
-    
+
     def check_streamer_exist(self, name):
         user = self.api.user(name)
         return bool(user)
-    
-    def add_streamer(self, streamer:Streamer):
+
+    def add_streamer(self, streamer: Streamer):
         controller = StreamerControllerChild(streamer, self.api)
         controller.check_streaming()
         self.streamers.append(controller)
-    
+
     def delete_streamer(self, streamer):
         for i in range(len(self.streamers)):
             if streamer.name == self.streamers[i].name:
                 self.streamers[i].on_delete()
                 del self.streamers[i]
                 break
-    
+
     def _update_timer(self):
         while True:
             for streamer in self.streamers:
@@ -94,10 +96,12 @@ class StreamerController:
         session = db_session.create_session()
         streamers = session.query(Streamer).all()
         session.close()
-        controllers = [StreamerControllerChild(streamer, self.api) for streamer in streamers]
+        controllers = [StreamerControllerChild(
+            streamer, self.api) for streamer in streamers]
         for controller in controllers:
             controller.check_streaming()
         return controllers
+
 
 if __name__ == '__main__':
     db_session.global_init()

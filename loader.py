@@ -16,10 +16,10 @@ class StreamListener:
     oauth = '0gn793kk3c98a6ugz38tt7zgoq6i0g'
     buffer_lenght = 1024 * 50000
     recieving_bytes_amount = 8192 * 2
-    trigger_timeout = timedelta(minutes=1)
-    phrazes_buffer_range = timedelta(seconds=60)
+    trigger_timeout = timedelta(minutes=5)
+    phrazes_buffer_range = timedelta(seconds=30)
     listening_after_triggering = timedelta(seconds=15)
-    phraze_threshold = 1
+    phraze_threshold = 2
     clip_path = '.\\static\\clips\\'
     screenshot_path = '.\\static\\screenshots\\'
 

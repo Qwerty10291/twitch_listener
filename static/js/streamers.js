@@ -1,13 +1,18 @@
 class Streamer {
   constructor() {
     this.active_streamer = null;
+    this.active_clip = null;
+    this.status = "clips";
     this.streamer_name = document.getElementById("current_sreamer");
     this.clips_container = document.querySelector(".videos");
     try {
       this.connect_add_button();
-    } catch (error) {
-    }
+    } catch (error) {}
     this.get_streamers();
+    document.onkeydown = (evt) => {
+      evt = evt || window.event;
+      if (evt.key == "Escape") this.on_esc();
+    };
   }
 
   get_streamers() {
@@ -18,7 +23,7 @@ class Streamer {
         );
       else
         resp.json().then((data) => {
-          this.active_streamer = null
+          this.active_streamer = null;
           this.data = data;
           this.sort_streamers();
           this.init_html();
@@ -52,15 +57,14 @@ class Streamer {
 
   generate_clip_html(clip_data) {
     this.clips_container.innerHTML = "";
+    this.status = "clips";
     for (let clip of clip_data) {
       let container = document.createElement("div");
       container.className = "video-card";
       container.innerHTML = `<img src=${clip.image}></img><span class="count">${clip.activity}</span>`;
-      container.addEventListener("click", () => {
-        let link = document.createElement("a");
-        link.setAttribute("href", clip.video);
-        link.setAttribute("download", clip.id + ".mp4");
-        link.click();
+      container.addEventListener("click", (e) => {
+        if (e.ctrlKey) this.download_clip(clip);
+        else this.play_clip(clip);
       });
       this.clips_container.append(container);
     }
@@ -70,13 +74,13 @@ class Streamer {
     if (this.active_streamer !== null) {
       if (this.active_streamer.name == streamer.name) return;
       this.active_streamer.element.style.border = "";
-      this.streamer_name.innerHTML = streamer.name
+      this.streamer_name.innerHTML = streamer.name;
       streamer.element.style.border = "2px solid gray";
       this.active_streamer = streamer;
       this.update_clips(streamer);
     } else {
       streamer.element.style.border = "2px solid gray";
-      this.streamer_name.innerHTML = streamer.name
+      this.streamer_name.innerHTML = streamer.name;
       this.active_streamer = streamer;
       this.update_clips(streamer);
     }
@@ -107,7 +111,7 @@ class Streamer {
         if (data.error) this.error_container.innerHTML = data.error;
         else {
           this.error_container.innerHTML = "";
-          this.get_streamers()
+          this.get_streamers();
         }
       });
     });
@@ -123,6 +127,41 @@ class Streamer {
         });
       }
     });
+  }
+
+  download_clip(clip) {
+    let link = document.createElement("a");
+    link.setAttribute("href", clip.video);
+    link.setAttribute("download", clip.id + ".mp4");
+    link.click();
+  }
+
+  play_clip(clip) {
+    this.clips_container.innerHTML = "";
+    this.status = "video";
+    this.active_clip = clip;
+    let video_player = document.createElement("video");
+    let source = document.createElement("source");
+    let download_button = document.createElement("button");
+    download_button.className = "download-video";
+    download_button.addEventListener("click", () => {
+      this.download_clip(clip);
+    });
+    source.setAttribute("src", clip.video);
+    source.setAttribute("type", "video/mp4");
+    video_player.setAttribute("controls", true);
+    video_player.classList = "video-player";
+    video_player.append(source);
+    this.clips_container.append(video_player);
+    this.clips_container.append(download_button);
+  }
+
+  on_esc() {
+    switch (this.status) {
+      case "video":
+        this.update_clips(this.active_streamer);
+        break;
+    }
   }
 }
 

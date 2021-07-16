@@ -4,17 +4,22 @@ from db import logic
 from flask_admin.contrib.sqla import ModelView
 import os
 from loader_controller import StreamerController
-from flask import request
+from flask import request, flash
 
 class UserView(ModelView):
     can_create = False
+    def delete_model(self, model):
+        if model.role == 'admin':
+            return flash('нельзя удалить администратора')
+        else:
+            return super().delete_model(model)
 
     form_columns = ['login', 'password', 'role', 'is_approved']
 
 class GameView(ModelView):
     def delete_model(self, model):
         logic.on_delete_game(model)
-        super().delete_model(model)
+        return super().delete_model(model)
 
     form_excluded_columns = ['id', 'streamers']
     form_columns = ['name', 'streamers']

@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, sessions, abort
-from flask_admin.base import expose
 from db import db_session
 from db import logic
 from db.models import *
@@ -7,21 +6,20 @@ from loader_controller import StreamerController
 from flask_restful import Api
 from streamer_resource import GameResource, StreamerResource, StreamerListResource, PhrazeResource, PhrazeListResource, UserListResource
 from login import login_manager
-from flask_login import login_required, login_user, logout_user, current_user
+from flask_login import login_required, login_user, logout_user, current_user, AnonymousUserMixin
 from forms import LoginForm, RegisterForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_admin import Admin, AdminIndexView
 from admin_views import *
 
+
+
 class AdminView(AdminIndexView):
-    @expose('/')
-    def index(self):
-        if not current_user:
-            return abort(404)
-        if current_user.role != 'admin':
-            return abort(404)
-        else:
-            return super().index()
+    def is_accessible(self):
+        if current_user.is_authenticated:
+            return current_user.role == 'admin'
+        return False
+
 
 
 app = Flask(__name__)
@@ -29,8 +27,6 @@ app.secret_key = b'iwiuwjeiuweulie49812389u298'
 admin = Admin(app, index_view=AdminView())
 login_manager.init_app(app)
 
-
-    
 
 api = Api(app)
 api.add_resource(GameResource, '/api/game')
@@ -45,6 +41,7 @@ api.add_resource(UserListResource, '/api/user')
 @login_required
 def index():
     return render_template('index.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -69,6 +66,7 @@ def login():
         return redirect('/')
     return render_template('login.html', title='Вход', form=form)
 
+
 @app.route('/register', methods=["GET", "POST"])
 def register():
     if current_user.is_authenticated:
@@ -84,18 +82,31 @@ def register():
             return render_template('register.html', title='Регистрация', form=form, errors="Данный логин занят.")
         hashed_password = generate_password_hash(request.form.get('password'))
 
-        user = Users(login=login, password=hashed_password, role='user', is_approved=False)
+        user = Users(login=login, password=hashed_password,
+                     role='user', is_approved=False)
         session.add(user)
         session.commit()
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)
+
+
+@app.route('/clip/<int:id>')
+@login_required
+def view_clip(id):
+    session = db_session.create_session()
+    clip = session.query(Clips).get(id)
+    if not clip:
+        return abort(404)
+    streamer = clip.streamer.name
+    video = f'clips/{streamer}_{id}.mp4'
+    return render_template('video.html', video=video)
+
 
 @app.route('/logout')
 def logout():
     if current_user.is_authenticated:
         logout_user()
     return redirect('/login')
-
 
 
 if __name__ == '__main__':
