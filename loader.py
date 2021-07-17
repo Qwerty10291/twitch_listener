@@ -10,7 +10,7 @@ import multiprocessing
 from db import db_session
 from db.models import *
 import time
-
+import sys
 
 class StreamListener:
     oauth = '0gn793kk3c98a6ugz38tt7zgoq6i0g'
@@ -57,7 +57,8 @@ class StreamListener:
     def stop(self):
         """остановка процесса"""
         if getattr(self, 'process', None):
-            self.process.terminate()
+            print('stopping process')
+            self.process.kill()
         else:
             self.chat.dispose()
             self.is_listening = False
@@ -121,7 +122,11 @@ class StreamListener:
             if not self.is_listening:
                 break
             try:
-                self.video += self.stream.read(self.recieving_bytes_amount)
+                data = self.stream.read(self.recieving_bytes_amount)
+            except:
+                sys.exit()
+            try:
+                self.video += data
                 if len(self.video) > self.buffer_lenght:
                     del self.video[:len(self.video) - self.buffer_lenght]
             except:

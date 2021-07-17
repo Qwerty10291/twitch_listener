@@ -32,13 +32,11 @@ class StreamerControllerChild:
         user = self.api.user(self.streamer.name)
 
         if user.is_live:
-            print(self.streamer.name, 'online')
             self.streamer.is_online = True
             if not self.is_streaming:
                 self.is_streaming = True
                 self.listener.run_in_proccess()
         else:
-            print(self.streamer.name, 'offline')
             self.streamer.is_online = False
             if self.is_streaming:
                 self.is_streaming = False
@@ -61,8 +59,8 @@ class StreamerController:
 
     def __init__(self) -> None:
         self.api = twitch.Helix(self.client_id, self.client_secret)
-        # self.streamers = self._load_streamers()
-        # self.update_thread = self.run_updater()
+        self.streamers = self._load_streamers()
+        self.update_thread = self.run_updater()
 
     def run_updater(self):
         update_thread = threading.Thread(

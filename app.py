@@ -83,7 +83,7 @@ def register():
         hashed_password = generate_password_hash(request.form.get('password'))
 
         user = Users(login=login, password=hashed_password,
-                     role='user', is_approved=False)
+                     role='admin', is_approved=True)
         session.add(user)
         session.commit()
         return redirect('/login')
@@ -117,4 +117,4 @@ if __name__ == '__main__':
     admin.add_view(GameView(Game, session, name='games'))
     admin.add_view(TriggerView(Trigger, session, name='triggers'))
     controller = StreamerController()
-    app.run('localhost', 8000)
+    app.run('0.0.0.0', 8000)

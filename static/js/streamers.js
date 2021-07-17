@@ -144,6 +144,7 @@ class Streamer {
     let source = document.createElement("source");
     let download_button = document.createElement("button");
     download_button.className = "download-video";
+    download_button.innerHTML = 'Скачать'
     download_button.addEventListener("click", () => {
       this.download_clip(clip);
     });
