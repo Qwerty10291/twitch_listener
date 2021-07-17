@@ -31,6 +31,7 @@ class StreamListener:
     def run(self):
         """начальная инициализация"""
         print('starting', self.streamer.name)
+        db_session.dispose_session()
         db_session.global_init()
 
         self.phrazes = self.load_phrazes()

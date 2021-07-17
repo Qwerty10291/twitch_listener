@@ -2,6 +2,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy.orm import Session
 import sqlalchemy.ext.declarative as dec
+from sqlalchemy.orm import session
 from sqlalchemy.orm.session import sessionmaker
 
 SqlAlchemyBase = dec.declarative_base()
@@ -27,3 +28,11 @@ def global_init():
 def create_session() -> Session:
     global __factory
     return __factory()
+
+def dispose_session():
+    global engine
+    print('exposing', session)
+    try:
+        engine.dispose()
+    except:
+        print(engine)
