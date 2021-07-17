@@ -31,15 +31,14 @@ class StreamListener:
     def run(self):
         """начальная инициализация"""
         print('starting', self.streamer.name)
-        db_session.dispose_session()
-        db_session.global_init()
+        self.engine, self.session_maker = db_session.get_sessionmaker()
 
         self.phrazes = self.load_phrazes()
         self.trigger_timer = datetime.now()
 
         self.chat = twitch.Chat(
             '#' + self.streamer.name, nickname='vamban__', oauth='oauth:' + self.oauth)
-        self.chat_buffer: List[DateTime] = []
+        self.chat_buffer: List[datetime] = []
 
         self.session = streamlink.Streamlink()
         self.session.set_option('twitch-oauth-token', self.oauth)
@@ -72,7 +71,7 @@ class StreamListener:
         clip = Clips(activity=activity)
         print('starting', activity)
         try:
-            session = db_session.create_session()
+            session = self.session_maker()
             session.add(self.streamer)
 
             self.streamer.clips.append(clip)
@@ -80,7 +79,7 @@ class StreamListener:
             streamer = self.streamer
             session.commit()
         except:
-            session = db_session.create_session()
+            session = self.session_maker()
             streamer = session.query(Streamer).get(self.streamer.id)
             streamer.clips.append(clip)
             streamer.activity += 1
@@ -156,9 +155,8 @@ class StreamListener:
         if count:
             del self.chat_buffer[:count + 1]
 
-    @staticmethod
-    def load_phrazes():
+    def load_phrazes(self):
         """загрузка фраз из базы данных"""
-        session = db_session.create_session()
+        session = self.session_maker()
         phrazes = session.query(Trigger).all()
         return [phraze.name for phraze in phrazes]
