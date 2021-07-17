@@ -6,13 +6,16 @@ from sqlalchemy.orm.session import sessionmaker
 
 SqlAlchemyBase = dec.declarative_base()
 __factory = None
+engine = None
 def global_init():
-    global __factory
+    global __factory, engine
 
+    if engine:
+        engine.dispose()
 
     conn_str = f'postgresql+psycopg2://twitch:qwerty1029@localhost/twitch'
     print(f"Подключение к базе данных по адресу {conn_str}")
-
+    
     engine = sa.create_engine(conn_str, echo=False, pool_size=20, max_overflow=0)
     __factory = orm.sessionmaker(bind=engine)
 

@@ -49,5 +49,4 @@ class StreamerView(ModelView):
 
 
 class TriggerView(ModelView):
-    form_excluded_columns = ['id']
-    form_columns = ['id', 'name']
+    form_columns = ['name']
