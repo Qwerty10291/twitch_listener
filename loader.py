@@ -38,7 +38,7 @@ class StreamListener:
         self.trigger_timer = datetime.now()
 
         self.chat = twitch.Chat(
-            '#' + self.streamer.name, nickname='vamban__', oauth='oauth:' + self.oauth)
+            '#' + self.name.lower(), nickname='vamban__', oauth='oauth:' + self.oauth)
         self.chat_buffer: List[datetime] = []
 
         self.session = streamlink.Streamlink()
@@ -101,6 +101,7 @@ class StreamListener:
     def _phrazes_handler(self, message):
         """обработчик сообщений чата"""
         text = message.text.lower()
+        print(self.name, text)
         self._chat_buffer_update()
         for phraze in self.phrazes:
             if phraze in text:
@@ -162,9 +163,7 @@ class StreamListener:
     def load_phrazes(self):
         """загрузка фраз из базы данных"""
         session = self.session_maker()
-        session.add(self.streamer)
         self.name = self.streamer.name
-        session.expunge(self.streamer)
         phrazes = session.query(Trigger).all()
         names = [phraze.name for phraze in phrazes]
         session.close()
