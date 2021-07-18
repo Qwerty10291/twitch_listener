@@ -16,9 +16,9 @@ class StreamListener:
     oauth = '0gn793kk3c98a6ugz38tt7zgoq6i0g'
     buffer_lenght = 1024 * 50000
     recieving_bytes_amount = 8192 * 2
-    trigger_timeout = timedelta(minutes=5)
+    trigger_timeout = timedelta(minutes=2)
     phrazes_buffer_range = timedelta(seconds=30)
-    save_timeout = 90
+    save_timeout = 45
     listening_after_triggering = timedelta(seconds=15)
     phraze_threshold = 2
     clip_path = './static/clips/'
@@ -104,7 +104,7 @@ class StreamListener:
         self._chat_buffer_update()
         for phraze in self.phrazes:
             if phraze in text:
-                print(self.name, phraze)
+                print(self.name, phraze, len(self.chat_buffer))
                 self.chat_buffer.append(datetime.now())
                 break
         if len(self.chat_buffer) >= self.phraze_threshold and datetime.now() - self.trigger_timer > self.trigger_timeout:

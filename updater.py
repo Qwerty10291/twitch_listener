@@ -6,6 +6,7 @@ import os
 import schedule
 import time
 
+
 ALIVE_TIME = timedelta(hours=24)
 
 db_session.global_init()
