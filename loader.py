@@ -135,12 +135,14 @@ class StreamListener:
 
     def _save_by_timer(self, seconds):
         """функция для потока таймера запуска"""
-        time.sleep(self.save_timeout)
+        print('starting count messages', seconds)
         self.can_deleting_message_buffer = False
         time.sleep(seconds)
         phrazes_count = len(self.chat_buffer)
-        self.save_buffer(phrazes_count)
         self.can_deleting_message_buffer = True
+        print('starting wait timeout')
+        time.sleep(self.save_timeout)
+        self.save_buffer(phrazes_count)
         self.chat_buffer.clear()
 
     def _chat_buffer_update(self):
