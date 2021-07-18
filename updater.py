@@ -4,7 +4,7 @@ from db.models import *
 from datetime import date, datetime, timedelta
 import os
 
-ALIVE_TIME = timedelta(hours=18)
+ALIVE_TIME = timedelta(hours=1)
 
 db_session.global_init()
 session = db_session.create_session()
