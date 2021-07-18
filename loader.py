@@ -18,6 +18,7 @@ class StreamListener:
     recieving_bytes_amount = 8192 * 2
     trigger_timeout = timedelta(minutes=5)
     phrazes_buffer_range = timedelta(seconds=30)
+    save_timeout = 90
     listening_after_triggering = timedelta(seconds=15)
     phraze_threshold = 2
     clip_path = './static/clips/'
@@ -69,7 +70,6 @@ class StreamListener:
             print(f'not enought video')
             return
         clip = Clips(activity=activity)
-        print('starting', activity)
         try:
             session = self.session_maker()
             session.add(self.streamer)
@@ -84,6 +84,7 @@ class StreamListener:
             streamer.clips.append(clip)
             streamer.activity += 1
             session.commit()
+        print('starting', streamer.name, activity)
 
         filename = f'{streamer.name}_{clip.id}.mp4'
         clip_path = self.clip_path + filename
@@ -117,7 +118,7 @@ class StreamListener:
         self.stream = self.session.streams(
             'https://www.twitch.tv/' + self.streamer.name)['best'].open()
         self.video = bytearray()
-        print('started listening stream')
+        print('started listening stream', os.getpid())
         while True:
             if not self.is_listening:
                 break
@@ -134,6 +135,7 @@ class StreamListener:
 
     def _save_by_timer(self, seconds):
         """функция для потока таймера запуска"""
+        time.sleep(self.save_timeout)
         self.can_deleting_message_buffer = False
         time.sleep(seconds)
         phrazes_count = len(self.chat_buffer)
@@ -159,4 +161,6 @@ class StreamListener:
         """загрузка фраз из базы данных"""
         session = self.session_maker()
         phrazes = session.query(Trigger).all()
-        return [phraze.name for phraze in phrazes]
+        names = [phraze.name for phraze in phrazes]
+        session.close()
+        return names
