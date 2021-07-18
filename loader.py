@@ -3,6 +3,7 @@ from sqlalchemy.sql.sqltypes import DateTime
 import streamlink
 import subprocess
 import twitch
+from twitchstream import chat
 import threading
 import os
 from datetime import datetime, timedelta
@@ -37,13 +38,19 @@ class StreamListener:
         self.phrazes = self.load_phrazes()
         self.trigger_timer = datetime.now()
 
-        self.chat = twitch.Chat(
-            '#' + self.streamer.name, nickname='vamban__', oauth='oauth:' + self.oauth)
+        # self.chat = twitch.Chat(
+        #     '#' + self.streamer.name, nickname='vamban__', oauth='oauth:' + self.oauth)
+        self.chat = chat.TwitchChatStream('vamban__', 'oauth:' + self.oauth)
+        self.chat.connect()
+        self.chat.join_channel(self.streamer.name)
+        self.chat_thread = threading.Thread(target=self._chat_listener, daemon=True)
+        self.chat_thread.start()
         self.chat_buffer: List[datetime] = []
 
         self.session = streamlink.Streamlink()
         self.session.set_option('twitch-oauth-token', self.oauth)
 
+        print(self.chat.exception)
         self.chat.subscribe(self._phrazes_handler)
 
         self.listener_thread = threading.Thread(target=self._stream_listener)
@@ -100,7 +107,7 @@ class StreamListener:
 
     def _phrazes_handler(self, message):
         """обработчик сообщений чата"""
-        text = message.text.lower()
+        text = message.lower()
         self._chat_buffer_update()
         for phraze in self.phrazes:
             if phraze in text:
@@ -132,6 +139,15 @@ class StreamListener:
                     del self.video[:len(self.video) - self.buffer_lenght]
             except:
                 pass
+    
+    def _chat_listener(self):
+        print(self.name, 'starting listening chat')
+        while True:
+            messages = [message['message'] for message in self.chat.twitch_receive_messages()]
+            for message in messages:
+                self._phrazes_handler(message)
+            time.sleep(2)
+        
 
     def _save_by_timer(self, seconds):
         """функция для потока таймера запуска"""
