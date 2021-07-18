@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from flask import jsonify
+from flask import jsonify, abort
 from db import db_session
 from db.models import *
 from loader_controller import StreamerController
@@ -18,9 +18,13 @@ def admin_required(func):
 def provide_session(func):
     def wrapper(*args, **kwargs):
         session = db_session.create_session()
-        result = func(*args, session=session, **kwargs)
-        session.close()
-        return result
+        try:
+            result = func(*args, session=session, **kwargs)
+            session.close()
+            return result
+        except:
+            print('db api error in', func.__name__)
+            return abort(500)
     return wrapper
 
 class GameResource(Resource):
