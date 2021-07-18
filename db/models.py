@@ -60,5 +60,5 @@ class Clips(SqlAlchemyBase, SerializerMixin):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     streamer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('streamers.id'))
     activity = sqlalchemy.Column(sqlalchemy.Integer)
-    time_created = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.now())
+    time_created = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.now)
     streamer = orm.relation('Streamer')
