@@ -15,18 +15,26 @@ def admin_required(func):
         return func(*args, **kwargs)
     return wrapper
 
+def provide_session(func):
+    def wrapper(*args, **kwargs):
+        session = db_session.create_session()
+        result = func(*args, session=session, **kwargs)
+        session.close()
+        return result
+    return wrapper
+
 class GameResource(Resource):
     @login_required
-    def get(self):
-        session = db_session.create_session()
+    @provide_session
+    def get(self, session=None):
         games = session.query(Game).all()
         return jsonify([game.to_dict(only=('id', 'name', 'streamers.id', 'streamers.name', 'streamers.activity', 'streamers.is_online')) for game in games])
 
     @login_required
     @admin_required
-    def post(self):
+    @provide_session
+    def post(self, session=None):
         args = game_parser.parse_args()
-        session = db_session.create_session()
         game = session.query(Game).filter(Game.name == args.name).one_or_none()
         if game:
             return jsonify({'error': 'игра с таким названием уже существует'})
@@ -45,7 +53,8 @@ streamer_parser.add_argument('game', required=True, type=str, location='form')
 
 class StreamerResource(Resource):
     @login_required
-    def get(self, id):
+    @provide_session
+    def get(self, id, session=None):
         session = db_session.create_session()
         streamer = session.query(Streamer).get(id)
         if not streamer:
@@ -59,7 +68,8 @@ class StreamerResource(Resource):
 
     @login_required
     @admin_required
-    def delete(self, id):
+    @provide_session
+    def delete(self, id, session=None):
         session = db_session.create_session()
         streamer = session.query(Streamer).get(id)
         if not streamer:
@@ -71,19 +81,19 @@ class StreamerResource(Resource):
     
 class StreamerListResource(Resource):
     @login_required
-    def get(self):
-        session = db_session.create_session()
+    @provide_session
+    def get(self, session=None):
         streamers = session.query(Streamer).order_by(Streamer.activity.desc()).all()
 
         return jsonify([streamer.to_dict(only=('id', 'name', 'activity', 'is_online', 'game.id', 'game.name')) for streamer in streamers])
     
     @login_required
     @admin_required
-    def post(self):
+    @provide_session
+    def post(self, session=None):
         args = streamer_parser.parse_args()
         if 'twitch.tv' in args.name:
             args.name = args.name.split('/')[-1]
-        session = db_session.create_session()
         game = session.query(Game).filter(Game.name == args.game).one_or_none()
         if not game:
             game = Game(name=args.game)
@@ -111,17 +121,17 @@ phraze_parser.add_argument('text', required=True, type=str, location='body')
 
 class PhrazeListResource(Resource):
     @login_required
-    def get(self):
-        session = db_session.create_session()
+    @provide_session
+    def get(self, session=None):
         phrazes = session.query(Trigger).all()
 
         return jsonify([phraze.to_dict(only=('id', 'name')) for phraze in phrazes])
     
     @login_required
     @admin_required
-    def post(self):
-        args = phraze_parser.parse_args()
-        session = db_session.create_session()   
+    @provide_session
+    def post(self, session=None):
+        args = phraze_parser.parse_args()   
         trigger = Trigger(name=args.text)
         session.add(trigger)
         session.commit()
@@ -129,8 +139,8 @@ class PhrazeListResource(Resource):
 
 class PhrazeResource(Resource):
     @login_required
-    def get(self, id):
-        session = db_session.create_session()
+    @provide_session
+    def get(self, id, session=None):
 
         phraze = session.query(Trigger).get(id)
         if not phraze:
@@ -140,8 +150,8 @@ class PhrazeResource(Resource):
     
     @login_required
     @admin_required
-    def delete(self, id):
-        session = db_session.create_session()
+    @provide_session
+    def delete(self, id, session=None):
 
         phraze = session.query(Trigger).get(id)
         if not phraze:
@@ -152,7 +162,8 @@ class PhrazeResource(Resource):
         return jsonify({'success': 'OK'})
 
 class UserListResource(Resource):
-    def get(self):
-        session = db_session.create_session()
+    @login_required
+    @provide_session
+    def get(self, session=None):
         users = session.query(Users).all()
         return jsonify([user.to_dict(only=('id', 'login', 'role')) for user in users])
