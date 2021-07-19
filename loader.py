@@ -102,7 +102,6 @@ class StreamListener:
     def _phrazes_handler(self, message):
         """обработчик сообщений чата"""
         text = message.text.lower()
-        print(self.name, text)
         self._chat_buffer_update()
         for phraze in self.phrazes:
             if phraze in text:
