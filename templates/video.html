@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/video.css') }}">
     <title>Document</title>
 </head>
 <body>
-    <video controls>
-        <source src="{{ url_for('static', filename=video) }}" type="video/mp4">
-    </video>
+    <div class="video-container">
+        <video class="player" controls>
+            <source src="{{ url_for('static', filename=video) }}" type="video/mp4">
+        </video>
+        <a href="{{ url_for('static', filename=video) }}" download="{{ video }}"  class="download">Скачать</a>
+    </div>
 </body>
 </html>

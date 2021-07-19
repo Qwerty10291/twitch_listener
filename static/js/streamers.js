@@ -63,7 +63,7 @@ class Streamer {
       container.className = "video-card";
       container.innerHTML = `<img src=${clip.image}></img><span class="count">${clip.activity}</span>`;
       container.addEventListener("click", (e) => {
-        if (e.ctrlKey) this.download_clip(clip);
+        if (e.ctrlKey) this.open_clip(clip.id);
         else this.play_clip(clip);
       });
       this.clips_container.append(container);
@@ -134,6 +134,16 @@ class Streamer {
     link.setAttribute("href", clip.video);
     link.setAttribute("download", clip.id + ".mp4");
     link.click();
+  }
+  
+  open_clip(clip_id){
+    let protocol = window.location.protocol;
+    let host = window.location.host;
+    let port = window.location.port;
+    if(port)
+      window.open(`${protocol}://${host}:${port}/clips/${clip_id}`)
+    else
+      window.open(`${protocol}://${host}/clips/${clip_id}`)
   }
 
   play_clip(clip) {
