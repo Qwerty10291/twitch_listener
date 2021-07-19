@@ -30,10 +30,10 @@ class StreamListener:
 
     def run(self):
         """начальная инициализация"""
-        print('starting', self.streamer.name)
         self.engine, self.session_maker = db_session.get_sessionmaker()
 
         self.phrazes = self.load_phrazes()
+        print('starting', self.name)
         self.trigger_timer = datetime.now()
 
         self.chat = twitch.Chat(
