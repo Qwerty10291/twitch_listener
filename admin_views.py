@@ -21,8 +21,7 @@ class GameView(ModelView):
         logic.on_delete_game(model)
         return super().delete_model(model)
 
-    form_excluded_columns = ['id', 'streamers']
-    form_columns = ['name', 'streamers']
+    form_columns = ['name']
 
 class StreamerView(ModelView):
 
@@ -45,8 +44,17 @@ class StreamerView(ModelView):
         self.after_model_delete(model)
     
 
-    form_columns = ['game', 'name']
+    form_columns = ['game', 'name', 'threshold']
 
 
 class TriggerView(ModelView):
     form_columns = ['name']
+
+    def create_model(self, form):
+        name = request.form.get('name')
+        if not name:
+            return False
+        name = name.lower()
+        self.session.add(Trigger(name=name))
+        self.session.commit()
+        return True

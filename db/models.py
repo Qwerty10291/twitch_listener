@@ -39,6 +39,7 @@ class Streamer(SqlAlchemyBase, SerializerMixin):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     game_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('games.id'))
     name = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=False)
+    threshold = sqlalchemy.Column(sqlalchemy.Integer, default=2)
     activity = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     is_online = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
     game = orm.relation('Game')

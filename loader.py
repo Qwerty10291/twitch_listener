@@ -1,5 +1,4 @@
 from typing import List
-from sqlalchemy.sql.sqltypes import DateTime
 import streamlink
 import subprocess
 import twitch
@@ -18,7 +17,7 @@ class StreamListener:
     recieving_bytes_amount = 8192 * 2
     trigger_timeout = timedelta(minutes=2)
     phrazes_buffer_range = timedelta(seconds=30)
-    save_timeout = 45
+    save_timeout = 5
     listening_after_triggering = timedelta(seconds=15)
     phraze_threshold = 2
     clip_path = './static/clips/'
@@ -35,6 +34,8 @@ class StreamListener:
         self.engine, self.session_maker = db_session.get_sessionmaker()
 
         self.phrazes = self.load_phrazes()
+        self.name = self.streamer.name
+        self.phraze_threshold = self.streamer.threshold
         self.trigger_timer = datetime.now()
 
         self.chat = twitch.Chat(
@@ -92,7 +93,7 @@ class StreamListener:
         with open('b_' + filename, 'wb') as file:
             file.write(self.video)
         subprocess.call(['ffmpeg', '-err_detect', 'ignore_err', '-i',
-                        f'b_{filename}', '-ss', '00:00:00', '-t', '00:00:40', '-c', 'copy', '-y', clip_path], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        f'b_{filename}', '-ss', '00:00:00', '-t', '00:02:00', '-c', 'copy', '-y', clip_path], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         os.remove('b_' + filename)
         subprocess.call(['ffmpeg', '-ss', '00:00:10', '-i', clip_path,
                         '-vframes', '1', '-q:v', '2',  screen_path],  stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -163,7 +164,6 @@ class StreamListener:
     def load_phrazes(self):
         """загрузка фраз из базы данных"""
         session = self.session_maker()
-        self.name = self.streamer.name
         phrazes = session.query(Trigger).all()
         names = [phraze.name for phraze in phrazes]
         session.close()
