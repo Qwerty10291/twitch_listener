@@ -33,16 +33,19 @@ class StreamerControllerChild:
 
         if user.is_live:
             self.streamer.is_online = True
+            session.commit()
+            session.close()
             if not self.is_streaming:
                 self.is_streaming = True
                 self.listener.run_in_proccess()
         else:
             self.streamer.is_online = False
+            session.commit()
+            session.close()
             if self.is_streaming:
                 self.is_streaming = False
                 self.listener.stop()
-        session.commit()
-        session.close()
+        
 
     def on_delete(self):
         if self.is_streaming:

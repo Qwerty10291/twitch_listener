@@ -34,8 +34,6 @@ class StreamListener:
         self.engine, self.session_maker = db_session.get_sessionmaker()
 
         self.phrazes = self.load_phrazes()
-        self.name = self.streamer.name
-        self.phraze_threshold = self.streamer.threshold
         self.trigger_timer = datetime.now()
 
         self.chat = twitch.Chat(
@@ -163,6 +161,9 @@ class StreamListener:
     def load_phrazes(self):
         """загрузка фраз из базы данных"""
         session = self.session_maker()
+        session.add(self.streamer)
+        self.name = self.streamer.name
+        self.phraze_threshold = self.streamer.threshold
         phrazes = session.query(Trigger).all()
         names = [phraze.name for phraze in phrazes]
         session.close()
