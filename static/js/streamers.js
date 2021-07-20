@@ -60,8 +60,10 @@ class Streamer {
     this.status = "clips";
     for (let clip of clip_data) {
       let container = document.createElement("div");
+      let clip_date = Date.parse(clip.time_created)
+      let hours = Date.now() - clip_date / (1000 * 60 * 60)
       container.className = "video-card";
-      container.innerHTML = `<img src=${clip.image}></img><span class="count">${clip.activity}</span>`;
+      container.innerHTML = `<img src=${clip.image}></img><span class="count">${clip.activity}</span><span class="time">${hours}</span>`;
       container.addEventListener("click", (e) => {
         if (e.ctrlKey) this.open_clip(clip.id);
         else this.play_clip(clip);
