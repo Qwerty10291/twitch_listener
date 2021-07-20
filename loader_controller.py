@@ -29,7 +29,10 @@ class StreamerControllerChild:
         session = db_session.create_session()
         session.add(self.streamer)
         self.name = self.streamer.name
-        user = self.api.user(self.streamer.name)
+        try:
+            user = self.api.user(self.streamer.name)
+        except:
+            return
 
         if user.is_live:
             print(self.name, 'live')
@@ -73,7 +76,10 @@ class StreamerController:
         return update_thread
 
     def check_streamer_exist(self, name):
-        user = self.api.user(name)
+        try:
+            user = self.api.user(name)
+        except:
+            raise ApiError()
         return bool(user)
 
     def add_streamer(self, streamer: Streamer):
@@ -108,3 +114,7 @@ class StreamerController:
 if __name__ == '__main__':
     db_session.global_init()
     controller = StreamerController()
+
+
+class ApiError(Exception):
+    pass

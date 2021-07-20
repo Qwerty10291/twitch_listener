@@ -3,7 +3,7 @@ from db.models import *
 from db import logic
 from flask_admin.contrib.sqla import ModelView
 import os
-from loader_controller import StreamerController
+from loader_controller import StreamerController, ApiError
 from flask import request, flash
 
 class UserView(ModelView):
@@ -28,8 +28,12 @@ class StreamerView(ModelView):
     def create_model(self, form):
         name = request.form.get('name')
         controller = StreamerController()
-        if not controller.check_streamer_exist(name):
-            return False
+        try:
+            if not controller.check_streamer_exist(name):
+                flash(f'стримера с ником {name} нет')
+                return False
+        except:
+            flash('ошибка твича при проверке стримера. Повторите попытку')
         streamer = super().create_model(form)
         self.session.expunge(streamer)
         controller.add_streamer(streamer)

@@ -2,7 +2,7 @@ from flask_restful import Resource, reqparse
 from flask import jsonify, abort
 from db import db_session
 from db.models import *
-from loader_controller import StreamerController
+from loader_controller import ApiError, StreamerController
 from flask_login import login_required, current_user
 
 game_parser = reqparse.RequestParser()
@@ -64,7 +64,7 @@ class StreamerResource(Resource):
         if not streamer:
             return jsonify({'error': 'стримера с таким id нет'})
         
-        json = streamer.to_dict(only=('id', 'game_id', 'name', 'activity', 'is_online', 'clips.id', 'clips.activity'))
+        json = streamer.to_dict(only=('id', 'game_id', 'name', 'activity', 'is_online', 'clips.id', 'clips.activity', 'clips.time_created'))
         for clip in json['clips']:
             clip['image'] = f'static/screenshots/{streamer.name}_{clip["id"]}.jpg'
             clip['video'] = f'static/clips/{streamer.name}_{clip["id"]}.mp4'
@@ -108,8 +108,11 @@ class StreamerListResource(Resource):
             return jsonify({'error': 'стример с таким именем уже существует'})
 
         controller = StreamerController()
-        if not controller.check_streamer_exist(args.name):
-            return jsonify({'error': f'стример с именем {args.name} не найден'})
+        try:
+            if not controller.check_streamer_exist(args.name):
+                return jsonify({'error': f'стример с именем {args.name} не найден'})
+        except ApiError:
+            return jsonify({'error': 'ошибка в api твича при проверке пользователя. Повторите попытку.'})
         
         streamer = Streamer(name=args.name)
         game.streamers.append(streamer)
