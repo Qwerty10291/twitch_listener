@@ -2,6 +2,7 @@ class Streamer {
   constructor() {
     this.active_streamer = null;
     this.active_clip = null;
+    this.video_player = null;
     this.status = "clips";
     this.streamer_name = document.getElementById("current_sreamer");
     this.clips_container = document.querySelector(".videos");
@@ -11,7 +12,17 @@ class Streamer {
     this.get_streamers();
     document.onkeydown = (evt) => {
       evt = evt || window.event;
-      if (evt.key == "Escape") this.on_esc();
+      switch (evt.key) {
+        case "Escape":
+          this.on_esc();
+          break;
+        case "ArrowUp":
+          this.video_speed_up();
+          break;
+        case "ArrowDown":
+          this.video_speed_normal();
+          break;
+      }
     };
   }
 
@@ -60,10 +71,12 @@ class Streamer {
     this.status = "clips";
     for (let clip of clip_data) {
       let container = document.createElement("div");
+      let clip_date = Date.parse(clip.time_created);
+      let hours = Math.floor((Date.now() - clip_date) / (1000 * 60 * 60));
       container.className = "video-card";
-      container.innerHTML = `<img src=${clip.image}></img><span class="count">${clip.activity}</span>`;
+      container.innerHTML = `<img src=${clip.image}></img><span class="count">${clip.activity}</span><span class="time">${hours}</span>`;
       container.addEventListener("click", (e) => {
-        if (e.ctrlKey) this.download_clip(clip);
+        if (e.ctrlKey) this.open_clip(clip.id);
         else this.play_clip(clip);
       });
       this.clips_container.append(container);
@@ -136,6 +149,13 @@ class Streamer {
     link.click();
   }
 
+  open_clip(clip_id) {
+    let protocol = window.location.protocol;
+    let host = window.location.host;
+    let port = window.location.port;
+    window.open(`/clip/${clip_id}`);
+  }
+
   play_clip(clip) {
     this.clips_container.innerHTML = "";
     this.status = "video";
@@ -144,7 +164,7 @@ class Streamer {
     let source = document.createElement("source");
     let download_button = document.createElement("button");
     download_button.className = "download-video";
-    download_button.innerHTML = 'Скачать'
+    download_button.innerHTML = "Скачать";
     download_button.addEventListener("click", () => {
       this.download_clip(clip);
     });
@@ -155,14 +175,22 @@ class Streamer {
     video_player.append(source);
     this.clips_container.append(video_player);
     this.clips_container.append(download_button);
+    this.video_player = video_player;
   }
 
   on_esc() {
     switch (this.status) {
       case "video":
+        this.video_player = null;
         this.update_clips(this.active_streamer);
         break;
     }
+  }
+  video_speed_up() {
+    if (this.video_player !== null) this.video_player.playbackRate = 2.0;
+  }
+  video_speed_normal() {
+    if (this.video_player !== null) this.video_player.playbackRate = 1.0;
   }
 }
 

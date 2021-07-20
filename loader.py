@@ -1,5 +1,4 @@
 from typing import List
-from sqlalchemy.sql.sqltypes import DateTime
 import streamlink
 import subprocess
 import twitch
@@ -15,11 +14,11 @@ import sys
 
 class StreamListener:
     oauth = '0gn793kk3c98a6ugz38tt7zgoq6i0g'
-    buffer_lenght = 1024 * 50000
+    buffer_lenght = 1024 * 70000
     recieving_bytes_amount = 8192 * 2
     trigger_timeout = timedelta(minutes=2)
     phrazes_buffer_range = timedelta(seconds=30)
-    save_timeout = 45
+    save_timeout = 20
     listening_after_triggering = timedelta(seconds=15)
     phraze_threshold = 2
     clip_path = './static/clips/'
@@ -32,19 +31,14 @@ class StreamListener:
 
     def run(self):
         """начальная инициализация"""
-        print('starting', self.streamer.name)
         self.engine, self.session_maker = db_session.get_sessionmaker()
 
         self.phrazes = self.load_phrazes()
+        print('starting', self.name)
         self.trigger_timer = datetime.now()
 
-        # self.chat = twitch.Chat(
-        #     '#' + self.streamer.name, nickname='vamban__', oauth='oauth:' + self.oauth)
-        self.chat = chat.TwitchChatStream('vamban__', 'oauth:' + self.oauth, verbose=True)
-        self.chat.connect()
-        self.chat.join_channel(self.streamer.name)
-        self.chat_thread = threading.Thread(target=self._chat_listener, daemon=True)
-        self.chat_thread.start()
+        self.chat = twitch.Chat(
+            '#' + self.name.lower(), nickname='vamban__', oauth='oauth:' + self.oauth)
         self.chat_buffer: List[datetime] = []
 
         self.session = streamlink.Streamlink()
@@ -96,7 +90,7 @@ class StreamListener:
         with open('b_' + filename, 'wb') as file:
             file.write(self.video)
         subprocess.call(['ffmpeg', '-err_detect', 'ignore_err', '-i',
-                        f'b_{filename}', '-ss', '00:00:00', '-t', '00:00:40', '-c', 'copy', '-y', clip_path], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        f'b_{filename}', '-ss', '00:00:00', '-t', '00:02:00', '-c', 'copy', '-y', clip_path], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         os.remove('b_' + filename)
         subprocess.call(['ffmpeg', '-ss', '00:00:10', '-i', clip_path,
                         '-vframes', '1', '-q:v', '2',  screen_path],  stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -177,6 +171,7 @@ class StreamListener:
         """загрузка фраз из базы данных"""
         session = self.session_maker()
         self.name = self.streamer.name
+        self.phraze_threshold = self.streamer.threshold
         phrazes = session.query(Trigger).all()
         names = [phraze.name for phraze in phrazes]
         session.close()

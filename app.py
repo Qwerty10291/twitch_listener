@@ -83,7 +83,7 @@ def register():
         hashed_password = generate_password_hash(request.form.get('password'))
 
         user = Users(login=login, password=hashed_password,
-                     role='admin', is_approved=True)
+                     role='user', is_approved=False)
         session.add(user)
         session.commit()
         return redirect('/login')
@@ -99,6 +99,7 @@ def view_clip(id):
         return abort(404)
     streamer = clip.streamer.name
     video = f'clips/{streamer}_{id}.mp4'
+    session.close()
     return render_template('video.html', video=video)
 
 

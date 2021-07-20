@@ -29,20 +29,26 @@ class StreamerControllerChild:
         session = db_session.create_session()
         session.add(self.streamer)
         self.name = self.streamer.name
-        user = self.api.user(self.streamer.name)
+        try:
+            user = self.api.user(self.streamer.name)
+        except:
+            return
 
         if user.is_live:
             self.streamer.is_online = True
+            session.commit()
+            session.close()
             if not self.is_streaming:
                 self.is_streaming = True
                 self.listener.run_in_proccess()
         else:
             self.streamer.is_online = False
+            session.commit()
+            session.close()
             if self.is_streaming:
                 self.is_streaming = False
                 self.listener.stop()
-        session.commit()
-        session.close()
+        
 
     def on_delete(self):
         if self.is_streaming:
@@ -69,7 +75,10 @@ class StreamerController:
         return update_thread
 
     def check_streamer_exist(self, name):
-        user = self.api.user(name)
+        try:
+            user = self.api.user(name)
+        except:
+            raise ApiError()
         return bool(user)
 
     def add_streamer(self, streamer: Streamer):
@@ -104,3 +113,7 @@ class StreamerController:
 if __name__ == '__main__':
     db_session.global_init()
     controller = StreamerController()
+
+
+class ApiError(Exception):
+    pass
