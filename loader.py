@@ -13,11 +13,11 @@ import sys
 
 class StreamListener:
     oauth = '0gn793kk3c98a6ugz38tt7zgoq6i0g'
-    buffer_lenght = 1024 * 50000
+    buffer_lenght = 1024 * 70000
     recieving_bytes_amount = 8192 * 2
     trigger_timeout = timedelta(minutes=2)
     phrazes_buffer_range = timedelta(seconds=30)
-    save_timeout = 5
+    save_timeout = 20
     listening_after_triggering = timedelta(seconds=15)
     phraze_threshold = 2
     clip_path = './static/clips/'

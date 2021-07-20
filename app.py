@@ -83,7 +83,7 @@ def register():
         hashed_password = generate_password_hash(request.form.get('password'))
 
         user = Users(login=login, password=hashed_password,
-                     role='admin', is_approved=True)
+                     role='user', is_approved=False)
         session.add(user)
         session.commit()
         return redirect('/login')

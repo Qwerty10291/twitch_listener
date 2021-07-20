@@ -32,6 +32,7 @@ class StreamerControllerChild:
         user = self.api.user(self.streamer.name)
 
         if user.is_live:
+            print(self.name, 'live')
             self.streamer.is_online = True
             session.commit()
             session.close()

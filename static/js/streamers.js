@@ -140,10 +140,7 @@ class Streamer {
     let protocol = window.location.protocol;
     let host = window.location.host;
     let port = window.location.port;
-    if(port)
-      window.open(`${protocol}://${host}:${port}/clips/${clip_id}`)
-    else
-      window.open(`${protocol}://${host}/clips/${clip_id}`)
+    window.open(`/clip/${clip_id}`)
   }
 
   play_clip(clip) {
