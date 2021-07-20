@@ -2,6 +2,7 @@ class Streamer {
   constructor() {
     this.active_streamer = null;
     this.active_clip = null;
+    this.video_player = null;
     this.status = "clips";
     this.streamer_name = document.getElementById("current_sreamer");
     this.clips_container = document.querySelector(".videos");
@@ -12,6 +13,17 @@ class Streamer {
     document.onkeydown = (evt) => {
       evt = evt || window.event;
       if (evt.key == "Escape") this.on_esc();
+      switch(evt.key){
+        case 'Escape':
+          this.on_esc()
+          break;
+        case 'ArrowUp':
+          this.video_speed_up()
+          break;
+        case 'ArrowDown':
+          this.video_speed_normal()
+          break;
+      }
     };
   }
 
@@ -164,14 +176,24 @@ class Streamer {
     video_player.append(source);
     this.clips_container.append(video_player);
     this.clips_container.append(download_button);
+    this.video_player = video_player
   }
 
   on_esc() {
     switch (this.status) {
       case "video":
+        this.video_player = null
         this.update_clips(this.active_streamer);
         break;
     }
+  }
+  video_speed_up(){
+    if(this.video_player !== null)
+      this.video_player.playbackRate = 2.0
+  }
+  video_speed_normal(){
+    if(this.video_player !== null)
+      this.video_player.playbackRate = 1.0
   }
 }
 
