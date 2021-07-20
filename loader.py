@@ -40,7 +40,7 @@ class StreamListener:
 
         # self.chat = twitch.Chat(
         #     '#' + self.streamer.name, nickname='vamban__', oauth='oauth:' + self.oauth)
-        self.chat = chat.TwitchChatStream('vamban__', 'oauth:' + self.oauth)
+        self.chat = chat.TwitchChatStream('vamban__', 'oauth:' + self.oauth, verbose=True)
         self.chat.connect()
         self.chat.join_channel(self.streamer.name)
         self.chat_thread = threading.Thread(target=self._chat_listener, daemon=True)
@@ -49,9 +49,6 @@ class StreamListener:
 
         self.session = streamlink.Streamlink()
         self.session.set_option('twitch-oauth-token', self.oauth)
-
-        print(self.chat.exception)
-        self.chat.subscribe(self._phrazes_handler)
 
         self.listener_thread = threading.Thread(target=self._stream_listener)
         self.listener_thread.run()
@@ -108,6 +105,7 @@ class StreamListener:
     def _phrazes_handler(self, message):
         """обработчик сообщений чата"""
         text = message.lower()
+        print(self.name, text)
         self._chat_buffer_update()
         for phraze in self.phrazes:
             if phraze in text:
@@ -178,9 +176,7 @@ class StreamListener:
     def load_phrazes(self):
         """загрузка фраз из базы данных"""
         session = self.session_maker()
-        session.add(self.streamer)
         self.name = self.streamer.name
-        session.expunge(self.streamer)
         phrazes = session.query(Trigger).all()
         names = [phraze.name for phraze in phrazes]
         session.close()
