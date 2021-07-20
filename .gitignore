@@ -1,6 +1,8 @@
 env
+.vscode
 *.mp4
 *.png
 *jpg
 *.pyc
 test.py
+*.log
