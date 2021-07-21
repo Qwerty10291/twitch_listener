@@ -58,7 +58,7 @@ class StreamListener:
         """остановка процесса"""
         if getattr(self, 'process', None):
             print('stopping process')
-            self.process.kill()
+            self.process.terminate()
         else:
             self.chat.dispose()
             self.is_listening = False
