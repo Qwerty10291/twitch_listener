@@ -109,7 +109,6 @@ class StreamListener:
         self._chat_buffer_update()
         for phraze in self.phrazes:
             if phraze in text:
-                self.logger.info('trigger: ' + phraze)
                 self.chat_buffer.append(datetime.now())
                 break
         if len(self.chat_buffer) >= self.phraze_threshold and datetime.now() - self.trigger_timer > self.trigger_timeout:
