@@ -1,3 +1,5 @@
+let is_playing = false
+
 document.onkeydown = (evt) => {
     evt = evt || window.event;
     switch (evt.key) {
@@ -13,6 +15,12 @@ document.onkeydown = (evt) => {
         case "Escape":
           window.close()
           break;
+        case " ":
+            if(is_playing)
+              video_stop()
+            else
+              video_play()
+
     }
 }
 
@@ -21,6 +29,12 @@ function video_speed_up(){
 }
 function video_speed_normal() {
     document.querySelector('video').playbackRate = 1.0
+}
+function video_stop(){
+    document.querySelector('video').pause()
+}
+function video_play(){
+    document.querySelector('video').play()
 }
 function download_video(){
     let href = document.querySelector('.download').getAttribute("href")
