@@ -26,19 +26,15 @@ class StreamerControllerChild:
         self.streamer = streamer
         self.api = api
         self.listener = StreamListener(streamer)
-        
-        session = db_session.create_session()
-        session.add(self.streamer)
-        self.name = self.streamer.name
+        self.check_streaming()
         self.logger = logging.getLogger(f'Child {self.name}')
-        session.close()
 
     def check_streaming(self):
         session = db_session.create_session()
         session.add(self.streamer)
         self.name = self.streamer.name
         try:
-            user = self.api.user(self.streamer.name)
+            user = self.api.user(self.name)
         except:
             return
 
@@ -100,8 +96,6 @@ class StreamerController:
 
     def add_streamer(self, streamer: Streamer):
         controller = StreamerControllerChild(streamer, self.api)
-        controller.check_streaming()
-        
         self.streamers.append(controller)
 
     def delete_streamer(self, streamer):
@@ -121,7 +115,7 @@ class StreamerController:
         self.logger.info('Init controller')
         session = db_session.create_session()
         streamers = session.query(Streamer).all()
-        session.close()
+        session.close_all()
         controllers = [StreamerControllerChild(
             streamer, self.api) for streamer in streamers]
         for controller in controllers:

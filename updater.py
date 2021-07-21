@@ -7,7 +7,7 @@ import schedule
 import time
 
 
-ALIVE_TIME = timedelta(hours=12)
+ALIVE_TIME = timedelta(hours=18)
 
 db_session.global_init()
 
