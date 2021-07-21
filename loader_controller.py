@@ -6,6 +6,8 @@ from db.models import *
 from loader import StreamListener
 import time
 import threading
+import logging
+
 
 
 def singleton(class_):
@@ -22,24 +24,34 @@ class StreamerControllerChild:
     def __init__(self, streamer: Streamer, api: twitch.Helix) -> None:
         self.is_streaming = False
         self.streamer = streamer
-        self.api = api
-        self.listener = StreamListener(streamer)
-
-    def check_streaming(self):
         session = db_session.create_session()
         session.add(self.streamer)
         self.name = self.streamer.name
+        session.close()
+        self.logger = logging.getLogger(f'Child {self.name}')
+        self.api = api
+        self.listener = StreamListener(streamer)
+        self.check_streaming()
+
+    def check_streaming(self):
+        session = db_session.create_session()
         try:
-            user = self.api.user(self.streamer.name)
+            session.add(self.streamer)
         except:
+            session = session.object_session(self.streamer)
+        try:
+            user = self.api.user(self.name)
+            status = user.is_live
+        except Exception as e:
+            self.logger.exception('twitch api error')
             return
 
-        if user.is_live:
-            print(self.name, 'live')
+        if status:
             self.streamer.is_online = True
             session.commit()
             session.close()
             if not self.is_streaming:
+                self.logger.info('run')
                 self.is_streaming = True
                 self.listener.run_in_proccess()
         else:
@@ -47,13 +59,17 @@ class StreamerControllerChild:
             session.commit()
             session.close()
             if self.is_streaming:
+                self.logger.info('stop')
                 self.is_streaming = False
-                self.listener.stop()
-        
+                try:
+                    self.listener.stop()
+                except:
+                    self.logger.exception('failed to stop listener')
+    
 
     def on_delete(self):
         if self.is_streaming:
-            print('stopping', self.name)
+            self.logger.info('delete')
             self.listener.stop()
 
 
@@ -65,9 +81,11 @@ class StreamerController:
     update_time = 10
 
     def __init__(self) -> None:
+        self.logger = logging.getLogger('Parent')
         self.api = twitch.Helix(self.client_id, self.client_secret)
         self.streamers = self._load_streamers()
         self.update_thread = self.run_updater()
+        
 
     def run_updater(self):
         update_thread = threading.Thread(
@@ -79,12 +97,12 @@ class StreamerController:
         try:
             user = self.api.user(name)
         except:
+            self.logger.error('twitch api error')
             raise ApiError()
         return bool(user)
 
     def add_streamer(self, streamer: Streamer):
         controller = StreamerControllerChild(streamer, self.api)
-        controller.check_streaming()
         self.streamers.append(controller)
 
     def delete_streamer(self, streamer):
@@ -101,6 +119,7 @@ class StreamerController:
             time.sleep(self.update_time)
 
     def _load_streamers(self) -> List[StreamerControllerChild]:
+        self.logger.info('Init controller')
         session = db_session.create_session()
         streamers = session.query(Streamer).all()
         session.close()

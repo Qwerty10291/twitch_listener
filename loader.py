@@ -1,3 +1,4 @@
+import logging
 from typing import List
 import streamlink
 import subprocess
@@ -10,6 +11,9 @@ from db import db_session
 from db.models import *
 import time
 import sys
+from contextlib import redirect_stdout
+from io import StringIO
+import logging
 
 class StreamListener:
     oauth = '0gn793kk3c98a6ugz38tt7zgoq6i0g'
@@ -30,24 +34,28 @@ class StreamListener:
 
     def run(self):
         """начальная инициализация"""
+
         self.engine, self.session_maker = db_session.get_sessionmaker()
 
         self.phrazes = self.load_phrazes()
-        print('starting', self.name)
+        self.logger = logging.getLogger('Listener ' + self.name)
+        self.logger.info('start')
         self.trigger_timer = datetime.now()
 
         self.chat = twitch.Chat(
             '#' + self.name.lower(), nickname='vamban__', oauth='oauth:' + self.oauth)
+        self.chat.subscribe(self._phrazes_handler)
         self.chat_buffer: List[datetime] = []
 
         self.session = streamlink.Streamlink()
         self.session.set_option('twitch-oauth-token', self.oauth)
-
-        self.chat.subscribe(self._phrazes_handler)
+        self.session.set_option('hls-playlist-reload-attempts', 5)
+        self.session.set_option('hls-timeout', 15)
 
         self.listener_thread = threading.Thread(target=self._stream_listener)
         self.listener_thread.run()
         self.listener_thread.join()
+        print(self.chat.exception)
 
     def run_in_proccess(self):
         """запуск слушателя в отдельном процессе"""
@@ -57,8 +65,9 @@ class StreamListener:
     def stop(self):
         """остановка процесса"""
         if getattr(self, 'process', None):
-            print('stopping process')
-            self.process.terminate()
+            self.logger.info('stop')
+            if self.process.is_alive():
+                self.process.kill()
         else:
             self.chat.dispose()
             self.is_listening = False
@@ -83,7 +92,7 @@ class StreamListener:
             streamer.clips.append(clip)
             streamer.activity += 1
             session.commit()
-        print('starting', streamer.name, activity)
+        self.logger.info('saving buffer with activity: ' + str(activity))
 
         filename = f'{streamer.name}_{clip.id}.mp4'
         clip_path = self.clip_path + filename
@@ -103,7 +112,7 @@ class StreamListener:
         self._chat_buffer_update()
         for phraze in self.phrazes:
             if phraze in text:
-                print(self.name, phraze, len(self.chat_buffer))
+                self.logger.info('trigger:' + phraze)
                 self.chat_buffer.append(datetime.now())
                 break
         if len(self.chat_buffer) >= self.phraze_threshold and datetime.now() - self.trigger_timer > self.trigger_timeout:
@@ -117,29 +126,38 @@ class StreamListener:
         self.stream = self.session.streams(
             'https://www.twitch.tv/' + self.streamer.name)['best'].open()
         self.video = bytearray()
-        print('started listening stream', os.getpid())
+        self.logger.info('start listening stream')
         while True:
             if not self.is_listening:
                 break
             try:
                 data = self.stream.read(self.recieving_bytes_amount)
-            except:
-                sys.exit()
+            except Exception as e:
+                self.logger.exception('unable to reload playlist')
             try:
                 self.video += data
                 if len(self.video) > self.buffer_lenght:
                     del self.video[:len(self.video) - self.buffer_lenght]
             except:
                 pass
+    
+    def _chat_listener(self):
+        self.logger.info('start listening chat')
+        while True:
+            messages = [message['message'] for message in self.chat.twitch_receive_messages()]
+            for message in messages:
+                self._phrazes_handler(message)
+            time.sleep(2)
+        
 
     def _save_by_timer(self, seconds):
         """функция для потока таймера запуска"""
-        print('starting count messages', seconds)
+        self.logger.info('start count activity ' + str(seconds))
         self.can_deleting_message_buffer = False
         time.sleep(seconds)
         phrazes_count = len(self.chat_buffer)
         self.can_deleting_message_buffer = True
-        print('starting wait timeout')
+        self.logger.info('starting wait timeout')
         time.sleep(self.save_timeout)
         self.save_buffer(phrazes_count)
         self.chat_buffer.clear()
