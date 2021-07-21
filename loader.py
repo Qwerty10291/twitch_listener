@@ -3,7 +3,6 @@ from typing import List
 import streamlink
 import subprocess
 import twitch
-from twitchstream import chat
 import threading
 import os
 from datetime import datetime, timedelta
