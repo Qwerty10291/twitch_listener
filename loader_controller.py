@@ -61,11 +61,10 @@ class StreamerControllerChild:
             if self.is_streaming:
                 self.logger.info('stop')
                 self.is_streaming = False
-                self.listener.stop()
-        if hasattr(self.listener, 'process'):
-            if not self.listener.process.is_alive() and self.is_streaming:
-                self.logger.error('rebooting listener after error')
-                self.listener.run_in_proccess()
+                try:
+                    self.listener.stop()
+                except:
+                    self.logger.exception('failed to stop listener')
     
 
     def on_delete(self):
