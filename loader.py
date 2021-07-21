@@ -49,6 +49,8 @@ class StreamListener:
 
         self.session = streamlink.Streamlink()
         self.session.set_option('twitch-oauth-token', self.oauth)
+        self.session.set_option('hls-playlist-reload-attempts', 5)
+        self.session.set_option('hls-timeout', 15)
 
         self.listener_thread = threading.Thread(target=self._stream_listener)
         self.listener_thread.run()
@@ -128,12 +130,10 @@ class StreamListener:
         while True:
             if not self.is_listening:
                 break
-            error_buffer = StringIO()
-            with redirect_stdout(error_buffer):
+            try:
                 data = self.stream.read(self.recieving_bytes_amount)
-            if 'unable to' in error_buffer.getvalue().lower():
-                self.logger.error('unable to reload')
-                sys.exit()
+            except Exception as e:
+                self.logger.exception('unable to reload playlist')
             try:
                 self.video += data
                 if len(self.video) > self.buffer_lenght:
