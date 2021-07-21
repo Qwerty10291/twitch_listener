@@ -44,6 +44,7 @@ class StreamListener:
 
         self.chat = twitch.Chat(
             '#' + self.name.lower(), nickname='vamban__', oauth='oauth:' + self.oauth)
+        self.chat.subscribe(self._phrazes_handler)
         self.chat_buffer: List[datetime] = []
 
         self.session = streamlink.Streamlink()
@@ -52,6 +53,7 @@ class StreamListener:
         self.listener_thread = threading.Thread(target=self._stream_listener)
         self.listener_thread.run()
         self.listener_thread.join()
+        print(self.chat.exception)
 
     def run_in_proccess(self):
         """запуск слушателя в отдельном процессе"""
@@ -104,10 +106,11 @@ class StreamListener:
 
     def _phrazes_handler(self, message):
         """обработчик сообщений чата"""
-        text = message.lower()
+        text = message.text.lower()
         self._chat_buffer_update()
         for phraze in self.phrazes:
             if phraze in text:
+                self.logger.info('trigger:' + phraze)
                 self.chat_buffer.append(datetime.now())
                 break
         if len(self.chat_buffer) >= self.phraze_threshold and datetime.now() - self.trigger_timer > self.trigger_timeout:

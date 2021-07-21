@@ -24,21 +24,29 @@ class StreamerControllerChild:
     def __init__(self, streamer: Streamer, api: twitch.Helix) -> None:
         self.is_streaming = False
         self.streamer = streamer
-        self.api = api
-        self.listener = StreamListener(streamer)
-        self.check_streaming()
-        self.logger = logging.getLogger(f'Child {self.name}')
-
-    def check_streaming(self):
         session = db_session.create_session()
         session.add(self.streamer)
         self.name = self.streamer.name
+        session.close()
+        self.logger = logging.getLogger(f'Child {self.name}')
+        self.api = api
+        self.listener = StreamListener(streamer)
+        self.check_streaming()
+
+    def check_streaming(self):
+        session = db_session.create_session()
+        try:
+            session.add(self.streamer)
+        except:
+            session = session.object_session(self.streamer)
         try:
             user = self.api.user(self.name)
-        except:
+            status = user.is_live
+        except Exception as e:
+            self.logger.exception('twitch api error')
             return
 
-        if user.is_live:
+        if status:
             self.streamer.is_online = True
             session.commit()
             session.close()
@@ -115,7 +123,7 @@ class StreamerController:
         self.logger.info('Init controller')
         session = db_session.create_session()
         streamers = session.query(Streamer).all()
-        session.close_all()
+        session.close()
         controllers = [StreamerControllerChild(
             streamer, self.api) for streamer in streamers]
         for controller in controllers:
