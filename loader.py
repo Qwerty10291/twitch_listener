@@ -55,7 +55,6 @@ class StreamListener:
         self.listener_thread = threading.Thread(target=self._stream_listener)
         self.listener_thread.run()
         self.listener_thread.join()
-        print(self.chat.exception)
 
     def run_in_proccess(self):
         """запуск слушателя в отдельном процессе"""

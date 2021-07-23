@@ -118,7 +118,7 @@ if __name__ == '__main__':
     admin.add_view(StreamerView(Streamer, session, name='streamers'))
     admin.add_view(GameView(Game, session, name='games'))
     admin.add_view(TriggerView(Trigger, session, name='triggers'))
-    logging.basicConfig(filename='logs/app.log', filemode='w', format='%(name)s : %(asctime)s - %(levelname)s : %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='logs/app.log', filemode='w', format='%(process)d] %(name)s : %(asctime)s - %(levelname)s : %(message)s', level=logging.INFO)
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
     controller = StreamerController()
     app.run('0.0.0.0', 8000)
