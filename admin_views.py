@@ -2,9 +2,10 @@ from db.db_session import create_session
 from db.models import *
 from db import logic
 from flask_admin.contrib.sqla import ModelView
-import os
 from loader_controller import StreamerController, ApiError
 from flask import request, flash
+
+from settings import platform_list
 
 class UserView(ModelView):
     can_create = False
@@ -26,14 +27,17 @@ class GameView(ModelView):
 class StreamerView(ModelView):
 
     def create_model(self, form):
-        name = request.form.get('name')
+        platform = request.form.get('platform')
+        if platform not in platform_list:
+            flash(f'Платформы с названием {platform} нет в списке поддерживаемых платформ')
+        platform_id = request.form.get('platform_id')
         controller = StreamerController()
         try:
-            if not controller.check_streamer_exist(name):
-                flash(f'стримера с ником {name} нет')
+            if not controller.check_streamer_exist(platform_id):
+                flash(f'стримера {platform_id} не существует')
                 return False
-        except:
-            flash('ошибка твича при проверке стримера. Повторите попытку')
+        except ApiError:
+            flash('ошибка при проверке стримера. Повторите попытку')
         streamer = super().create_model(form)
         self.session.expunge(streamer)
         controller.add_streamer(streamer)
@@ -48,7 +52,7 @@ class StreamerView(ModelView):
         self.after_model_delete(model)
     
 
-    form_columns = ['game', 'name', 'threshold']
+    form_columns = ['game', 'name', 'platform_id', 'threshold']
 
 
 class TriggerView(ModelView):

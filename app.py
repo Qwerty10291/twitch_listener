@@ -12,7 +12,7 @@ from forms import LoginForm, RegisterForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_admin import Admin, AdminIndexView
 from admin_views import *
-
+import atexit
 
 
 class AdminView(AdminIndexView):
@@ -20,7 +20,6 @@ class AdminView(AdminIndexView):
         if current_user.is_authenticated:
             return current_user.role == 'admin'
         return False
-
 
 
 app = Flask(__name__)
@@ -84,7 +83,7 @@ def register():
         hashed_password = generate_password_hash(request.form.get('password'))
 
         user = Users(login=login, password=hashed_password,
-                     role='user', is_approved=False)
+                     role='admin', is_approved=True)
         session.add(user)
         session.commit()
         return redirect('/login')
@@ -118,7 +117,9 @@ if __name__ == '__main__':
     admin.add_view(StreamerView(Streamer, session, name='streamers'))
     admin.add_view(GameView(Game, session, name='games'))
     admin.add_view(TriggerView(Trigger, session, name='triggers'))
-    logging.basicConfig(filename='logs/app.log', filemode='w', format='%(process)d] %(name)s : %(asctime)s - %(levelname)s : %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='logs/app.log', filemode='w',
+                        format='%(process)d] %(name)s : %(asctime)s - %(levelname)s : %(message)s', level=logging.INFO)
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
     controller = StreamerController()
-    app.run('0.0.0.0', 8000)
+    atexit.register(controller.close_all)
+    app.run('localhost', 8000)

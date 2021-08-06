@@ -1,8 +1,8 @@
 import logging
 from typing import List
+from requests.sessions import session
 import streamlink
 import subprocess
-import twitch
 import threading
 import os
 from datetime import datetime, timedelta
@@ -10,13 +10,10 @@ import multiprocessing
 from db import db_session
 from db.models import *
 import time
-import sys
-from contextlib import redirect_stdout
-from io import StringIO
 import logging
 
 class StreamListener:
-    oauth = '0gn793kk3c98a6ugz38tt7zgoq6i0g'
+    oauth = '47sd2dgns59tveokd49kn9dykcocmx'
     buffer_lenght = 1024 * 70000
     recieving_bytes_amount = 8192 * 2
     trigger_timeout = timedelta(minutes=2)
@@ -27,8 +24,8 @@ class StreamListener:
     clip_path = './static/clips/'
     screenshot_path = './static/screenshots/'
 
-    def __init__(self, streamer: Streamer) -> None:
-        self.streamer = streamer
+    def __init__(self, streamer_id) -> None:
+        self.streamer_id = streamer_id
         self.is_listening = True
         self.can_deleting_message_buffer = True
 
@@ -37,24 +34,17 @@ class StreamListener:
 
         self.engine, self.session_maker = db_session.get_sessionmaker()
 
+        self._load_streamer()
         self.phrazes = self.load_phrazes()
         self.logger = logging.getLogger('Listener ' + self.name)
         self.logger.info('start')
         self.trigger_timer = datetime.now()
 
-        self.chat = twitch.Chat(
-            '#' + self.name.lower(), nickname='vamban__', oauth='oauth:' + self.oauth)
-        self.chat.subscribe(self._phrazes_handler)
         self.chat_buffer: List[datetime] = []
 
         self.session = streamlink.Streamlink()
-        self.session.set_option('twitch-oauth-token', self.oauth)
         self.session.set_option('hls-playlist-reload-attempts', 5)
         self.session.set_option('hls-timeout', 15)
-
-        self.listener_thread = threading.Thread(target=self._stream_listener)
-        self.listener_thread.run()
-        self.listener_thread.join()
 
     def run_in_proccess(self):
         """запуск слушателя в отдельном процессе"""
@@ -64,12 +54,8 @@ class StreamListener:
     def stop(self):
         """остановка процесса"""
         if getattr(self, 'process', None):
-            self.logger.info('stop')
             if self.process.is_alive():
                 self.process.kill()
-        else:
-            self.chat.dispose()
-            self.is_listening = False
 
     def save_buffer(self, activity):
         """обработка и сохранение данных из буфера"""
@@ -104,15 +90,21 @@ class StreamListener:
         subprocess.call(['ffmpeg', '-ss', '00:00:10', '-i', clip_path,
                         '-vframes', '1', '-q:v', '2',  screen_path],  stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         session.close()
+    
 
-    def _phrazes_handler(self, message):
+    def _phrazes_handler(self, message, time=None):
         """обработчик сообщений чата"""
-        text = message.text.lower()
+        if time is None:
+            time = datetime.now()
+        else:
+            if type(time) is str:
+                time = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+        
         self._chat_buffer_update()
         for phraze in self.phrazes:
-            if phraze in text:
+            if phraze in message:
                 self.logger.info('trigger:' + phraze)
-                self.chat_buffer.append(datetime.now())
+                self.chat_buffer.append(time)
                 break
         if len(self.chat_buffer) >= self.phraze_threshold and datetime.now() - self.trigger_timer > self.trigger_timeout:
             self.trigger_timer = datetime.now()
@@ -120,10 +112,9 @@ class StreamListener:
                 self.listening_after_triggering.seconds, ))
             timer_thread.start()
 
-    def _stream_listener(self):
+    def _stream_listener(self, stream):
         """запись стрима в буфер"""
-        self.stream = self.session.streams(
-            'https://www.twitch.tv/' + self.streamer.name)['best'].open()
+        self.stream = stream.open()
         self.video = bytearray()
         self.logger.info('start listening stream')
         while True:
@@ -139,14 +130,6 @@ class StreamListener:
                     del self.video[:len(self.video) - self.buffer_lenght]
             except:
                 pass
-    
-    def _chat_listener(self):
-        self.logger.info('start listening chat')
-        while True:
-            messages = [message['message'] for message in self.chat.twitch_receive_messages()]
-            for message in messages:
-                self._phrazes_handler(message)
-            time.sleep(2)
         
 
     def _save_by_timer(self, seconds):
@@ -178,10 +161,16 @@ class StreamListener:
     def load_phrazes(self):
         """загрузка фраз из базы данных"""
         session = self.session_maker()
-        session.add(self.streamer)
-        self.name = self.streamer.name
-        self.phraze_threshold = self.streamer.threshold
         phrazes = session.query(Trigger).all()
         names = [phraze.name for phraze in phrazes]
         session.close()
         return names
+    
+    def _load_streamer(self):
+        session = self.session_maker()
+        self.streamer :Streamer = session.query(Streamer).get(self.streamer_id)
+        self.name = self.streamer.name
+        self.platform = self.streamer.platform
+        self.platform_id = self.streamer.platform_id
+        session.close()
+        

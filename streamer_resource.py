@@ -4,6 +4,7 @@ from db import db_session
 from db.models import *
 from loader_controller import ApiError, StreamerController
 from flask_login import login_required, current_user
+from utils import get_platform
 
 game_parser = reqparse.RequestParser()
 game_parser.add_argument('name', required=True, type=str, location='form')
@@ -89,36 +90,38 @@ class StreamerListResource(Resource):
     def get(self, session=None):
         streamers = session.query(Streamer).order_by(Streamer.activity.desc()).all()
 
-        return jsonify([streamer.to_dict(only=('id', 'name', 'activity', 'is_online', 'game.id', 'game.name')) for streamer in streamers])
+        return jsonify([streamer.to_dict(only=('id', 'name', 'platform', 'activity', 'is_online', 'game.id', 'game.name')) for streamer in streamers])
     
     @login_required
     @admin_required
     @provide_session
     def post(self, session=None):
         args = streamer_parser.parse_args()
-        if 'twitch.tv' in args.name:
-            args.name = args.name.split('/')[-1]
+        platform, platform_id =  get_platform(args.name)
+        if platform is None:
+            return jsonify({'error': 'не удалось определить платформу. Проверьте правильность ссылки'})
         game = session.query(Game).filter(Game.name == args.game).one_or_none()
         if not game:
             game = Game(name=args.game)
             session.add(game)
 
-        streamer = session.query(Streamer).filter(Streamer.name == args.name).one_or_none()
+        streamer = session.query(Streamer).filter(Streamer.platform_id == platform_id).one_or_none()
         if streamer:
-            return jsonify({'error': 'стример с таким именем уже существует'})
+            return jsonify({'error': f'стример с id {platform_id} уже существует'})
 
         controller = StreamerController()
         try:
-            if not controller.check_streamer_exist(args.name):
-                return jsonify({'error': f'стример с именем {args.name} не найден'})
+            name = controller.check_streamer_exist(platform, platform_id)
+            if not name:
+                return jsonify({'error': f'стример с id {platform_id} не найден'})
         except ApiError:
-            return jsonify({'error': 'ошибка в api твича при проверке пользователя. Повторите попытку.'})
+            return jsonify({'error': 'ошибка в api при проверке пользователя. Повторите попытку.'})
         
-        streamer = Streamer(name=args.name)
+        streamer = Streamer(name=name, platform=platform, platform_id=platform_id)
         game.streamers.append(streamer)
         session.commit()
         
-        json = streamer.to_dict(only=('id', 'name', 'is_online', 'game.id', 'game.name'))
+        json = streamer.to_dict(only=('id', 'name', 'platform', 'is_online', 'game.id', 'game.name'))
         session.expunge_all()
         controller.add_streamer(streamer)
         return jsonify(json)
