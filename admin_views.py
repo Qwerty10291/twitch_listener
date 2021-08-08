@@ -33,8 +33,8 @@ class StreamerView(ModelView):
         platform_id = request.form.get('platform_id')
         controller = StreamerController()
         try:
-            if not controller.check_streamer_exist(platform_id):
-                flash(f'стримера {platform_id} не существует')
+            if not controller.check_streamer_exist(platform, platform_id):
+                flash(f'стримера на платформе {platform} с id {platform_id} не существует')
                 return False
         except ApiError:
             flash('ошибка при проверке стримера. Повторите попытку')
