@@ -1,7 +1,7 @@
 import re
 
-twitch_regexp = re.compile('twitch.tv/(\w+)')
-youtube_regexp = re.compile('youtube.com/channel/(\w+)')
+twitch_regexp = re.compile('twitch.tv\/(.+)')
+youtube_regexp = re.compile('youtube.com\/channel\/(.+)')
 
 def get_platform(link):
     

@@ -17,6 +17,6 @@ class YoutubeListener(StreamListener):
         self.chat = pytchat.create(video_id=self.video_id, interruptable=False)
         while self.chat.is_alive():
             for c in self.chat.get().sync_items():
-                self._phrazes_handler(c.message, time=c.datetime)
+                self._phrazes_handler(c.message)
         self.is_listening = False
     

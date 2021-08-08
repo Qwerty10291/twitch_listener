@@ -100,12 +100,14 @@ class StreamListener:
             if type(time) is str:
                 time = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
         
-        self._chat_buffer_update()
         for phraze in self.phrazes:
             if phraze in message:
                 self.logger.info('trigger:' + phraze)
                 self.chat_buffer.append(time)
                 break
+        
+        self._chat_buffer_update()
+
         if len(self.chat_buffer) >= self.phraze_threshold and datetime.now() - self.trigger_timer > self.trigger_timeout:
             self.trigger_timer = datetime.now()
             timer_thread = threading.Thread(target=self._save_by_timer, args=(

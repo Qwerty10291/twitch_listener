@@ -1,4 +1,3 @@
-from re import escape
 from time import time
 from typing import List
 import streamlink
@@ -98,7 +97,7 @@ class StreamerControllerChild:
             try:
                 streams = streamlink.Streamlink().streams(
                     f'https://youtube.com/channel/{self.platform_id}/live')
-                return bool(streams)
+                return bool(streams[1])
             except Exception as e:
                 self.logger.exception('youtube check failed')
 

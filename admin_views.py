@@ -52,7 +52,7 @@ class StreamerView(ModelView):
         self.after_model_delete(model)
     
 
-    form_columns = ['game', 'name', 'platform_id', 'threshold']
+    form_columns = ['game', 'name', 'platform', 'platform_id', 'threshold']
 
 
 class TriggerView(ModelView):
