@@ -174,5 +174,6 @@ class StreamListener:
         self.name = self.streamer.name
         self.platform = self.streamer.platform
         self.platform_id = self.streamer.platform_id
+        self.phraze_threshold = self.streamer.threshold
         session.close()
         
