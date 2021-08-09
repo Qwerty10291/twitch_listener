@@ -72,7 +72,7 @@ class Streamer {
     for (let clip of clip_data) {
       let container = document.createElement("div");
       let clip_date = Date.parse(clip.time_created);
-      let hours = Math.floor((Date.now() - clip_date) / (1000 * 60 * 60));
+      let hours = Math.ceil((Date.now() - clip_date) / (1000 * 60 * 60));
       container.className = "video-card";
       container.innerHTML = `<img src=${clip.image}></img><span class="count">${clip.activity}</span><span class="time">${hours}</span>`;
       container.addEventListener("click", (e) => {
