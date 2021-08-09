@@ -13,6 +13,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_admin import Admin, AdminIndexView
 from admin_views import *
 import atexit
+import waitress
 
 
 class AdminView(AdminIndexView):
@@ -122,4 +123,4 @@ if __name__ == '__main__':
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
     controller = StreamerController()
     atexit.register(controller.close_all)
-    app.run('localhost', 8000)
+    waitress.serve(app, host='0.0.0.0', port=8000, threads=3)
