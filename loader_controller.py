@@ -88,7 +88,9 @@ class StreamerControllerChild:
     def check_alive(self):
         if self.platform == 'twitch':
             try:
-                user = self.api.user(self.name)
+                user = self.api.user(self.platform_id)
+                if user is None:
+                    return False
                 return user.is_live
             except Exception as e:
                 self.logger.exception('twitch api error')

@@ -127,6 +127,7 @@ class StreamListener:
                 data = self.stream.read(self.recieving_bytes_amount)
             except Exception as e:
                 self.logger.exception('unable to reload playlist')
+                time.sleep(1)
             try:
                 self.video += data
                 if len(self.video) > self.buffer_lenght:
