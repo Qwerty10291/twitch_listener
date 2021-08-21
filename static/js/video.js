@@ -31,9 +31,11 @@ function video_speed_normal() {
     document.querySelector('video').playbackRate = 1.0
 }
 function video_stop(){
+  is_playing = false
     document.querySelector('video').pause()
 }
 function video_play(){
+  is_playing = true
     document.querySelector('video').play()
 }
 function download_video(){
