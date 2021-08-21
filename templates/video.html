@@ -8,6 +8,7 @@
     <title>Document</title>
 </head>
 <body>
+    <h1 style="text-align: center;">{{ streamer }}</h1>
     <div class="video-container">
         <video class="player" controls>
             <source src="{{ url_for('static', filename=video) }}" type="video/mp4">

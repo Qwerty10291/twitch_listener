@@ -16,6 +16,9 @@
   <body>
     <div class="header">
       <h2 id="current_sreamer"></h2>
+      {% if current_user.role == 'admin' %}
+      <a href="/admin">Админ панель</a>
+      {% endif %}
     </div>
     <div class="streamers-container">
       <div class="streamers">

@@ -101,7 +101,13 @@ def view_clip(id):
     streamer = clip.streamer.name
     video = f'clips/{streamer}_{id}.mp4'
     session.close()
-    return render_template('video.html', video=video)
+    return render_template('video.html', video=video, streamer=streamer)
+
+@app.before_request
+def check_authorize():
+    if current_user.is_authenticated:
+        if not current_user.is_approved:
+            logout_user()
 
 
 @app.route('/logout')
@@ -121,6 +127,7 @@ if __name__ == '__main__':
     logging.basicConfig(filename='logs/app.log', filemode='w',
                         format='%(process)d] %(name)s : %(asctime)s - %(levelname)s : %(message)s', level=logging.INFO)
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
+    logging.getLogger('waitress').setLevel(logging.ERROR)
     controller = StreamerController()
     atexit.register(controller.close_all)
     waitress.serve(app, host='0.0.0.0', port=8000, threads=3)

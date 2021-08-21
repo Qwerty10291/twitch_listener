@@ -37,7 +37,7 @@ body {
       grid-template-rows: 5% 95%;
   -ms-grid-columns: 20% 60% 20%;
       grid-template-columns: 20% 60% 20%;
-      grid-template-areas: "streamers header users" "streamers videos users";
+      grid-template-areas: "streamers header users" "streamers videos users";
   grid-column-gap: 10px;
 }
 
@@ -45,10 +45,18 @@ body {
   -ms-grid-row: 1;
   -ms-grid-column: 2;
   grid-area: header;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
 }
 
-.header h2 {
-  text-align: center;
+.header a {
+  margin-left: auto;
+  font-size: 1.25rem;
+  margin-top: 3px;
 }
 
 .streamers-container {

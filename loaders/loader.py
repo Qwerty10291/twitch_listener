@@ -92,8 +92,9 @@ class StreamListener:
         session.close()
     
 
-    def _phrazes_handler(self, message, time=None):
+    def _phrazes_handler(self, message:str, time=None):
         """обработчик сообщений чата"""
+        text = message.lower()
         if time is None:
             time = datetime.now()
         else:
@@ -101,7 +102,7 @@ class StreamListener:
                 time = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
         
         for phraze in self.phrazes:
-            if phraze in message:
+            if phraze in text:
                 self.logger.info('trigger:' + phraze)
                 self.chat_buffer.append(time)
                 break
