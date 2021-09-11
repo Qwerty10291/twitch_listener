@@ -11,9 +11,13 @@ class TwitchListener(StreamListener):
             '#' + self.platform_id.lower(), nickname='vamban__', oauth='oauth:' + self.oauth)
         self.chat.subscribe(self._handle_messages)
 
-        _, streams = self.session.streams('https://twitch.tv/' + self.name)
-        self._stream_listener(streams['best'])
+        self._stream_listener(self._get_streams())
     
+    def _get_streams(self):
+        _, streams = self.session.streams('https://twitch.tv/' + self.name)
+        if 'best' not in streams:
+            raise RuntimeError('cannot load stream list')
+        return streams['best']
     
     def _handle_messages(self, message):
         self._phrazes_handler(message.text)

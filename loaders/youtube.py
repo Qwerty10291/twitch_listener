@@ -6,13 +6,19 @@ import pytchat
 class YoutubeListener(StreamListener):
     def run(self):
         super().run()
-        plugin, streams = self.session.streams(f'https://youtube.com/channel/{self.platform_id}/live')
-        self.video_id = plugin.video_id
+        stream = self._get_streams()
+        self.video_id = self.plugin.video_id
         self.chat_thread = threading.Thread(target=self._chat_cycle, daemon=True)
         self.chat_thread.start()
-        self._stream_listener(streams['best'])
-
+        self._stream_listener(stream)
     
+    def _get_streams(self):
+        plugin, streams = self.session.streams(f'https://youtube.com/channel/{self.platform_id}/live')
+        self.plugin = plugin
+        if 'best' not in streams:
+            raise RuntimeError('cannot load stream list')
+        return streams['best']
+
     def _chat_cycle(self):
         self.chat = pytchat.create(video_id=self.video_id, interruptable=False)
         while self.chat.is_alive():

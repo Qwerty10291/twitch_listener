@@ -11,6 +11,7 @@ from db import db_session
 from db.models import *
 import time
 import logging
+import sys
 
 class StreamListener:
     oauth = '47sd2dgns59tveokd49kn9dykcocmx'
@@ -127,14 +128,25 @@ class StreamListener:
                 data = self.stream.read(self.recieving_bytes_amount)
             except Exception as e:
                 self.logger.exception('unable to reload playlist')
-                time.sleep(1)
+                while True:
+                    try:
+                        self.stream = self._get_streams().open()
+                        data = self.stream.read(self.recieving_bytes_amount)
+                        break
+                    except RuntimeError:
+                        sys.exit()
+                    except:
+                        self.logger.exception('Unable to update stream')
+                        time.sleep(1)
             try:
                 self.video += data
                 if len(self.video) > self.buffer_lenght:
                     del self.video[:len(self.video) - self.buffer_lenght]
             except:
                 pass
-        
+    
+    def _get_streams(self):
+        pass
 
     def _save_by_timer(self, seconds):
         """функция для потока таймера запуска"""
