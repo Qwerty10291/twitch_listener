@@ -24,6 +24,7 @@ class StreamListener:
     phraze_threshold = 2
     clip_path = './static/clips/'
     screenshot_path = './static/screenshots/'
+    max_retries = 10
 
     def __init__(self, streamer_id) -> None:
         self.streamer_id = streamer_id
@@ -55,8 +56,7 @@ class StreamListener:
     def stop(self):
         """остановка процесса"""
         if getattr(self, 'process', None):
-            if self.process.is_alive():
-                self.process.kill()
+            self.process.terminate()
 
     def save_buffer(self, activity):
         """обработка и сохранение данных из буфера"""
@@ -126,18 +126,23 @@ class StreamListener:
                 break
             try:
                 data = self.stream.read(self.recieving_bytes_amount)
+            except OSError:
+                self.logger.log('os error, exit')
+                sys.exit()
             except Exception as e:
                 self.logger.exception('unable to reload playlist')
+                retries = 0
                 while True:
                     try:
                         self.stream = self._get_streams().open()
                         data = self.stream.read(self.recieving_bytes_amount)
                         break
-                    except RuntimeError:
-                        sys.exit()
                     except:
                         self.logger.exception('Unable to update stream')
                         time.sleep(1)
+                        retries += 1
+                        if retries >= self.max_retries:
+                            sys.exit()
             try:
                 self.video += data
                 if len(self.video) > self.buffer_lenght:

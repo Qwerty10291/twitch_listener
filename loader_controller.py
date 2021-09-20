@@ -90,6 +90,7 @@ class StreamerControllerChild:
             try:
                 user = self.api.user(self.platform_id)
                 if user is None:
+                    self.logger.error('unknown user')
                     return False
                 return user.is_live
             except Exception as e:
