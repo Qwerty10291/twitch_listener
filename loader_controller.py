@@ -110,7 +110,7 @@ class StreamerControllerChild:
 
 @singleton
 class StreamerController:
-    oauth = '47sd2dgns59tveokd49kn9dykcocmx'
+    oauth = '36w37urh22gwcz7cr8raa6q0ofdqy8'
     client_id = 'jkomyxxtzay4ze86r16pfh2gmqlmx8'
     client_secret = 'umjmm0oj3kxnznzgjk5ouysc7tf7fl'
     youtube_key = 'AIzaSyDBvLYQ9kcjeJ3NMD5gWav3nmNzQoH7AOs'
