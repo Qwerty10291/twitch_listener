@@ -21,8 +21,14 @@ class YoutubeListener(StreamListener):
 
     def _chat_cycle(self):
         self.chat = pytchat.create(video_id=self.video_id, interruptable=False)
-        while self.chat.is_alive():
-            for c in self.chat.get().sync_items():
-                self._phrazes_handler(c.message)
+        while True:
+            try:
+                if self.chat.is_alive():
+                    for c in self.chat.get().sync_items():
+                        self._phrazes_handler(c.message)
+                else:
+                    break
+            except:
+                self.logger.exception('chat error')
         self.is_listening = False
     

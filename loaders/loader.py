@@ -127,16 +127,8 @@ class StreamListener:
             try:
                 data = self.stream.read(self.recieving_bytes_amount)
             except OSError:
-                os_retries = 0
                 self.logger.exception('os error')
-                while True:
-                    try:
-                        data = self.stream.read(self.recieving_bytes_amount)
-                    except:
-                        os_retries += 1
-                        if os_retries >= self.max_retries:
-                            self.logger.error('max os retries. exit')
-                            self.process.terminate()
+                data = self._stream_updater()
             except Exception as e:
                 self.logger.exception('unable to reload playlist')
                 data = self._stream_updater()
@@ -151,6 +143,7 @@ class StreamListener:
         retries = 0
         while True:
             try:
+                self.logger.info(f'error: attempt {retries}')
                 self.stream = self._get_streams().open()
                 data = self.stream.read(self.recieving_bytes_amount)
                 return data
