@@ -1,5 +1,5 @@
 import logging
-from flask import Flask, render_template, request, redirect, sessions, abort
+from flask import Flask, render_template, request, redirect, abort
 from db import db_session
 from db import logic
 from db.models import *

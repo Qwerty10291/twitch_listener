@@ -14,7 +14,7 @@ import logging
 import sys
 
 class StreamListener:
-    oauth = '47sd2dgns59tveokd49kn9dykcocmx'
+    oauth = '36w37urh22gwcz7cr8raa6q0ofdqy8'
     buffer_lenght = 1024 * 70000
     recieving_bytes_amount = 8192 * 2
     trigger_timeout = timedelta(minutes=2)
@@ -136,27 +136,31 @@ class StreamListener:
                         os_retries += 1
                         if os_retries >= self.max_retries:
                             self.logger.error('max os retries. exit')
-                            sys.exit()
+                            self.process.terminate()
             except Exception as e:
                 self.logger.exception('unable to reload playlist')
-                retries = 0
-                while True:
-                    try:
-                        self.stream = self._get_streams().open()
-                        data = self.stream.read(self.recieving_bytes_amount)
-                        break
-                    except:
-                        self.logger.exception('Unable to update stream')
-                        time.sleep(1)
-                        retries += 1
-                        if retries >= self.max_retries:
-                            sys.exit()
+                data = self._stream_updater()
             try:
                 self.video += data
                 if len(self.video) > self.buffer_lenght:
                     del self.video[:len(self.video) - self.buffer_lenght]
             except:
                 pass
+    
+    def _stream_updater(self):
+        retries = 0
+        while True:
+            try:
+                self.stream = self._get_streams().open()
+                data = self.stream.read(self.recieving_bytes_amount)
+                return data
+            except:
+                self.logger.exception('Unable to update stream')
+                time.sleep(1)
+                retries += 1
+                if retries >= self.max_retries:
+                    self.process.terminate()
+
     
     def _get_streams(self):
         pass
