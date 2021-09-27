@@ -31,8 +31,9 @@ class StreamerControllerChild:
         self.name = self.streamer.name
         self.platform_id = self.streamer.platform_id
         self.platform = self.streamer.platform
-        self.listener = self.get_listener()
+        self.streamer_id = self.streamer.id
         session.close()
+        self.listener = self.get_listener()
         self.logger = logging.getLogger(f'Child {self.name}')
         self.api = api
         self.check_streaming()
@@ -68,9 +69,9 @@ class StreamerControllerChild:
 
     def get_listener(self):
         if self.platform == 'twitch':
-            return TwitchListener(self.streamer.id)
+            return TwitchListener(self.streamer_id)
         elif self.platform == 'youtube':
-            return YoutubeListener(self.streamer.id)
+            return YoutubeListener(self.streamer_id)
 
     def on_delete(self):
         if self.is_streaming:
