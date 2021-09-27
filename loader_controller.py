@@ -57,6 +57,8 @@ class StreamerControllerChild:
             else:
                 if not self.listener.process.is_alive():
                     self.logger.error('process dead but streamer is streaming now. reopen')
+                    self.listener = self.get_listener()
+                    self.start()
         else:
             self.streamer.is_online = False
             session.commit()
