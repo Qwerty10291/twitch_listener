@@ -19,5 +19,9 @@ class TwitchListener(StreamListener):
             raise RuntimeError('cannot load stream list')
         return streams['best']
     
+    def stop_listening(self):
+        super().stop_listening()
+        self.chat.dispose()
+    
     def _handle_messages(self, message):
         self._phrazes_handler(message.text)
