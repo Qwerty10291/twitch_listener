@@ -152,6 +152,7 @@ class StreamListener:
                 time.sleep(1)
                 retries += 1
                 if retries >= self.max_retries:
+                    self.logger.error('max retries. stop listening')
                     self.stop_listening()
 
     
