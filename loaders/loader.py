@@ -154,6 +154,7 @@ class StreamListener:
                 if retries >= self.max_retries:
                     self.logger.error('max retries. stop listening')
                     self.stop_listening()
+                    raise Exception(f'Stop Listener {self.name}')
 
     
     def _get_streams(self):

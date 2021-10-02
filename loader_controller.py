@@ -45,9 +45,13 @@ class StreamerControllerChild:
         except:
             session = session.object_session(self.streamer)
 
-        status = self.check_alive()
-        if status is None:
-            return
+        try:
+            status = self.check_alive()
+            if status is None:
+                status = False
+        except Exception as e:
+            self.logger.exception('unknown error')
+            time.sleep(30)
 
         if status:
             self.streamer.is_online = True
@@ -56,16 +60,22 @@ class StreamerControllerChild:
             if not self.is_streaming:
                 self.start()
             else:
-                if not self.listener.process.is_alive():
-                    self.logger.error('process dead but streamer is streaming now. reopen')
-                    self.listener = self.get_listener()
-                    self.start()
+                try:
+                    if not self.listener.process.is_alive():
+                        self.logger.error('process dead but streamer is streaming now. reopen')
+                        self.listener = self.get_listener()
+                        self.start()
+                except Exception as msg:
+                    self.logger.exception('failed to reopen process')
         else:
-            self.streamer.is_online = False
-            session.commit()
-            session.close()
-            if self.is_streaming:
-                self.stop()
+            try:
+                self.streamer.is_online = False
+                session.commit()
+                session.close()
+                if self.is_streaming:
+                    self.stop()
+            except Exception as e:
+                self.logger.exception('unknown error when stop listener')
 
     def get_listener(self):
         if self.platform == 'twitch':
