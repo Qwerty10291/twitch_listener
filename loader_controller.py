@@ -11,6 +11,7 @@ import threading
 import logging
 import requests
 
+from twitch_api import TwitchApi
 
 def singleton(class_):
     instances = {}
@@ -23,7 +24,7 @@ def singleton(class_):
 
 
 class StreamerControllerChild:
-    def __init__(self, streamer: Streamer, api: twitch.Helix) -> None:
+    def __init__(self, streamer: Streamer, api: TwitchApi) -> None:
         self.is_streaming = False
         self.streamer = streamer
         session = db_session.create_session()
@@ -104,14 +105,10 @@ class StreamerControllerChild:
     def check_alive(self):
         if self.platform == 'twitch':
             try:
-                user = self.api.user(self.platform_id)
-                if user is None:
-                    self.logger.error('unknown user')
-                    return False
-                return user.is_live
+                return self.api.check_live(self.platform_id)
             except Exception as e:
                 self.logger.exception('twitch api error')
-                return
+                return False
         elif self.platform == 'youtube':
             try:
                 streams = streamlink.Streamlink().streams(
@@ -119,11 +116,12 @@ class StreamerControllerChild:
                 return bool(streams[1])
             except Exception as e:
                 self.logger.exception('youtube check failed')
+                return False
 
 
 @singleton
 class StreamerController:
-    oauth = '36w37urh22gwcz7cr8raa6q0ofdqy8'
+    oauth = 'bc7upb6rmi8o3rc4zg0d5uaxztntg4'
     client_id = 'jkomyxxtzay4ze86r16pfh2gmqlmx8'
     client_secret = 'umjmm0oj3kxnznzgjk5ouysc7tf7fl'
     youtube_key = 'AIzaSyDBvLYQ9kcjeJ3NMD5gWav3nmNzQoH7AOs'
@@ -131,7 +129,7 @@ class StreamerController:
 
     def __init__(self) -> None:
         self.logger = logging.getLogger('Parent')
-        self.api = twitch.Helix(self.client_id, self.client_secret)
+        self.twitch_client = TwitchApi(self.client_id, self.oauth)
         self.streamers = self._load_streamers()
         self.update_thread = self.run_updater()
 
@@ -144,12 +142,12 @@ class StreamerController:
     def check_streamer_exist(self, platform, platform_id) -> str:
         if platform == 'twitch':
             try:
-                user = self.api.user(platform_id)
-                if user:
-                    return user.display_name
-                else:
-                    return None
-            except:
+                user = self.twitch_client.get_user(platform_id)
+                return user.display_name
+            except NameError:
+                return None
+            except ValueError:
+                self.logger.exception('unknown twitch api error')
                 raise ApiError()
         elif platform == 'youtube':
             try:
@@ -163,7 +161,7 @@ class StreamerController:
                 raise ApiError()
 
     def add_streamer(self, streamer: Streamer):
-        controller = StreamerControllerChild(streamer, self.api)
+        controller = StreamerControllerChild(streamer, self.twitch_client)
         self.streamers.append(controller)
 
     def delete_streamer(self, streamer):
@@ -189,7 +187,7 @@ class StreamerController:
         streamers = session.query(Streamer).all()
         session.close()
         controllers = [StreamerControllerChild(
-            streamer, self.api) for streamer in streamers]
+            streamer, self.twitch_client) for streamer in streamers]
         for controller in controllers:
             controller.check_streaming()
         return controllers

@@ -130,4 +130,4 @@ if __name__ == '__main__':
     logging.getLogger('waitress').setLevel(logging.ERROR)
     controller = StreamerController()
     atexit.register(controller.close_all)
-    waitress.serve(app, host='0.0.0.0', port=8000, threads=3)
+    waitress.serve(app, host='127.0.0.1', port=8000, threads=3)

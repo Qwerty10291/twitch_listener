@@ -14,7 +14,7 @@ import logging
 import sys
 
 class StreamListener:
-    oauth = '36w37urh22gwcz7cr8raa6q0ofdqy8'
+    oauth = 'bc7upb6rmi8o3rc4zg0d5uaxztntg4'
     buffer_lenght = 1024 * 70000
     recieving_bytes_amount = 8192 * 2
     trigger_timeout = timedelta(minutes=2)
